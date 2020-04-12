@@ -1,0 +1,20 @@
+#ifndef ST_VEC4F
+#define ST_VEC4F
+
+typedef struct Vec4f {
+    float x;
+    float y;
+    float z;
+    float w;
+} Vec4f;
+
+Vec4f
+vec4fMulVec4f(Vec4f a, Vec4f b);
+
+Vec4f
+vec4fAddVec4f(Vec4f a, Vec4f b);
+
+Vec4f
+vec4fSubVec4f(Vec4f a, Vec4f b);
+
+#endif
