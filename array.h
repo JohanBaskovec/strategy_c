@@ -15,7 +15,7 @@ typedef struct Array {
 } Array;
 
 static inline int
-arrayAdd(Array *a, size_t sizeOfElement) {
+voidArrayAdd(Array *a, size_t sizeOfElement) {
     // init empty array
     if (a->allocated == 0) {
         a->allocated = 128;
@@ -41,7 +41,7 @@ arrayAdd(Array *a, size_t sizeOfElement) {
 }
 
 static inline void
-arrayRemove(Array *a, int i, size_t sizeOfElement) {
+voidArrayRemove(Array *a, int i, size_t sizeOfElement) {
     // init empty array
     if (a->allocated == 0) {
         return;
@@ -57,34 +57,33 @@ arrayRemove(Array *a, int i, size_t sizeOfElement) {
 }
 
 
-#define ARRAY_ADD(arr, element, newIndex)\
+#define arrayAdd(arr, element)\
     do {\
-        newIndex = arrayAdd((Array*)&arr, sizeof(element));\
+        int newIndex = voidArrayAdd((Array*)&arr, sizeof(element));\
         arr.data[newIndex] = element;\
     } while(0);
 
-#define ARRAY_PTR_ADD(arr, element)\
+#define arrayPtrAdd(arr, element)\
     do {\
-        int newIndex = arrayAdd((Array*)arr, sizeof(element));\
+        int newIndex = voidArrayAdd((Array*)arr, sizeof(element));\
         arr->data[newIndex] = element;\
     } while(0);
 
-#define ARRAY_ADD_NO_RET(arr, element)\
+#define arrayRemove(arr, i)\
     do {\
-        int newIndex = arrayAdd((Array*)&arr, sizeof(element));\
-        arr.data[newIndex] = element;\
+        voidArrayRemove((Array*)&arr, i, sizeof(*arr.data));\
     } while(0);
 
-#define ARRAY_REMOVE(arr, i)\
-    do {\
-        arrayRemove((Array*)&arr, i, sizeof(*arr.data));\
-    } while(0);
-
-#define ARRAY_NEW \
+#define arrayCreate() \
 {\
     .length = 0\
     , .allocated = 0\
     , .data = NULL\
 }
+
+#define arrayFree(a)\
+    free(a.data);\
+    a.length = 0;\
+    a.allocated = 0;
 
 #endif

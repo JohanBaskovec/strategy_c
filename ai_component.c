@@ -130,19 +130,18 @@ typedef struct PathFinding {
 
 Vec3fArray
 reconstructPath(Node start, Node *cameFrom, Node current) {
-    Vec3fArray path = ARRAY_NEW;
+    Vec3fArray path = arrayCreate();
     Node backtrackNode = current;
-    int i;
     #ifdef ST_PATHFINDING_LOG
     SDL_Log("reconstructPath: start=%f:%f",start.position.x, start.position.y);
     SDL_Log("reconstructPath, adding %f:%f", current.position.x, current.position.y);
     #endif
-    ARRAY_ADD(path, backtrackNode.position, i);
+    arrayAdd(path, backtrackNode.position);
     while (backtrackNode.position.x != start.position.x
             || backtrackNode.position.y != start.position.y) {
         int mi = MAP_INDEX(backtrackNode.position.x, backtrackNode.position.y);
         backtrackNode = cameFrom[mi];
-        ARRAY_ADD(path, backtrackNode.position, i);
+        arrayAdd(path, backtrackNode.position);
         #ifdef ST_PATHFINDING_LOG
         SDL_Log("reconstructPath, adding %f:%f", backtrackNode.position.x, backtrackNode.position.y);
         #endif
@@ -210,8 +209,7 @@ doTile(
             SDL_Log("Adding node %d:%d to open", x, y);
             #endif
             Node newNode = nodeCreate(newNodePosition);
-            int newNodeI;
-            ARRAY_ADD(pathFinding->open, newNode, newNodeI);
+            arrayAdd(pathFinding->open, newNode);
         }
     }
 }
@@ -228,7 +226,7 @@ pathFind(Vec3f start, Vec3f goal) {
     SDL_Log("pathFind: from %f:%f to %f:%f", start.x, start.y, goal.x, goal.y);
     #endif
 
-    Vec3fArray ret = ARRAY_NEW;
+    Vec3fArray ret = arrayCreate();
     int goalX = goal.x;
     int goalY = goal.y;
     if (worldGetDifficulty(goalX, goalY) == 1) {
@@ -238,7 +236,7 @@ pathFind(Vec3f start, Vec3f goal) {
 
     PathFinding pathFinding = {
         .cameFrom = malloc(sizeof(Node) * world.tilesN)
-        , .open = ARRAY_NEW
+        , .open = arrayCreate()
         , .gScores = malloc(sizeof(Node) * world.tilesN)
         , .fScores = malloc(sizeof(Node) * world.tilesN)
         , .goalX = goal.x
@@ -246,8 +244,7 @@ pathFind(Vec3f start, Vec3f goal) {
 
     };
     Node startNode = nodeCreate(start);
-    int nodeI;
-    ARRAY_ADD(pathFinding.open, startNode, nodeI);
+    arrayAdd(pathFinding.open, startNode);
     int currentIndex = MAP_INDEX(start.x, start.y);
     #ifdef ST_PATHFINDING_LOG
     SDL_Log("gScores[%d]=0", currentIndex);
@@ -303,7 +300,7 @@ pathFind(Vec3f start, Vec3f goal) {
         if (gScoreCurrent == -1) {
             fatalError("Current node has no score!!");
         }
-        ARRAY_REMOVE(pathFinding.open, minOpenI);
+        arrayRemove(pathFinding.open, minOpenI);
         for (int i = 0; i < pathFinding.open.length ; i++) {
             Node n = pathFinding.open.data[i];
 

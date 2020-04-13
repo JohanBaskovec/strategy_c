@@ -15,7 +15,7 @@ add_definitions(
 find_package(SDL2 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(OpenGL REQUIRED)
-include_directories(${SDL2_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIRS} /home/johan/c_project/mn_test/lib)
 
 set(SOURCES
     maths.c
@@ -42,18 +42,10 @@ add_executable(strategy
     ${SOURCES}
 )
 target_link_libraries(strategy ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} m)
-#add_executable(strategy_test
-#    maths_test.h
-#    main_test.c
-#    ${SOURCES}
-#)
-#target_link_libraries(strategy_test ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} m)
-#
-#add_executable(strategy_array_benchmarks
-#    benchmarks/array_benchmarks.c
-#    ${SOURCES}
-#)
-#target_link_libraries(strategy_array_benchmarks ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} m)
-
-
+add_executable(strategy_test
+    maths_test.h
+    main_test.c
+    ${SOURCES}
+)
+target_link_libraries(strategy_test ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} m)
 

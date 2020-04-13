@@ -11,12 +11,12 @@
 #include "error.h"
 #include "ai_component.h"
 
+int
+aiComponentArrayAdd(AiComponent e);
+
 World world;
 
 Floor dirtFloor;
-
-int
-aiComponentArrayAdd(AiComponent e);
 
 float
 worldGetDifficulty(int x, int y);
@@ -42,8 +42,7 @@ addWall(int x, int y) {
     };
     int spriteI = graphicsAddSprite(entity.texture, sprite);
     entity.spriteIndex = spriteI;
-    int entityI;
-    ARRAY_ADD(world.entities, entity, entityI);
+    arrayAdd(world.entities, entity);
 }
 
 void
@@ -81,8 +80,7 @@ worldInit() {
             };
             int spriteI = graphicsAddSprite(entity.texture, sprite);
             entity.spriteIndex = spriteI;
-            int entityI;
-            ARRAY_ADD(world.entities, entity, entityI);
+            arrayAdd(world.entities, entity);
         }
     }
 
@@ -112,9 +110,8 @@ worldInit() {
             , .spriteIndex = spriteI
             , .velocity = vec3fZero
         };
-        int entityI;
-        ARRAY_ADD(world.entities, entity, entityI);
-        world.aiComponents.data[aci].entity = entityI;
+        world.aiComponents.data[aci].entity = world.entities.length;
+        arrayAdd(world.entities, entity);
     }
 
     /*
@@ -155,8 +152,8 @@ worldUpdate() {
 
 int
 aiComponentArrayAdd(AiComponent e) {
-    int newIndex = arrayAdd((Array*)&world.aiComponents, sizeof(AiComponent));
-    world.aiComponents.data[newIndex] = e;
+    int newIndex = world.aiComponents.length;
+    arrayAdd(world.aiComponents, e);
     return newIndex;
 }
 

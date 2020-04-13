@@ -13,6 +13,7 @@
 #include "default_program.h"
 #include "box3f.h"
 #include "sprite.h"
+#include "array.h"
 
 #include "3d_data.h"
 
@@ -48,7 +49,9 @@ createTexture(GLuint texture, char const *fileName, GLenum format);
 
 int
 graphicsAddSprite(enum Texture texture, Sprite sprite) {
-    return spriteArrayAdd(&graphics.sprites[texture], sprite);
+    int i = graphics.sprites[texture].length;
+    arrayAdd(graphics.sprites[texture], sprite);
+    return i;
 }
 
 Sprite*
@@ -75,7 +78,8 @@ void
 graphicsInit() {
     // make sure that sprite array starts empty
     for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
-        graphics.sprites[i] = spriteArrayCreate();
+        SpriteArray a = arrayCreate();
+        graphics.sprites[i] = a;
     }
     Vec3f tileSize = {1.0, 1.0, 1.0};
     graphics.tileSize = tileSize;

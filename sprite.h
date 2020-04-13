@@ -14,13 +14,4 @@ typedef struct SpriteArray {
     int allocated;
     Sprite *data;
 } SpriteArray;
-
-int
-spriteArrayAdd(
-        SpriteArray *a
-        , Sprite sprite
-);
-
-SpriteArray
-spriteArrayCreate();
 #endif
