@@ -32,4 +32,10 @@ vec3fDotProduct(Vec3f a, Vec3f b);
 Vec3f
 vec3fCrossProduct(Vec3f a, Vec3f b);
 
+Vec3f
+vec3fDivf(Vec3f vec, float f);
+
+Vec3f
+vec3fSubf(Vec3f vec, float f);
+
 #endif

@@ -207,11 +207,9 @@ graphicsRender() {
         SpriteArray *a = &graphics.sprites[i];
         for (int x = 0 ; x < a->length ; x++) {
             Sprite *s = &a->data[x];
-            if (!s->alive) {
-                continue;
-            }
             Mat4f modelMat = mat4fVec3fTranslate(identityMat, s->box.position);
             modelMat = mat4fScale(modelMat, s->box.size);
+
             glUniformMatrix4fv(defaultProgram.model, 1, false, (GLfloat*)&modelMat);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);

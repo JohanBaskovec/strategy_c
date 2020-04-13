@@ -13,15 +13,21 @@ typedef enum Key {
     , KEY_CAMERA_MOVE_BACK
 
     , KEY_MOVE_TO_RANDOM_LOCATION
+    , KEY_GIVE_MOVE_ORDER
 
+    , KEY_SELECT
     , KEY_NUMBER
 } Key;
 
 typedef struct Input {
     bool pressedKeys[KEY_NUMBER];
+    bool pressedKeysThisFrame[KEY_NUMBER];
     Key keyMapping[SDL_NUM_SCANCODES];
+    Key mouseMapping[3];
     Uint32 timeLimit[KEY_NUMBER];
     Uint32 lastPress[KEY_NUMBER];
+    int hoveredEntity;
+    int selectedEntity;
 } Input;
 
 extern Input input;

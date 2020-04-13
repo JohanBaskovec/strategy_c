@@ -35,6 +35,7 @@ set(SOURCES
     sprite.c
     entity.c
     ai_component.c
+    box3f.c
 )
 
 add_executable(strategy

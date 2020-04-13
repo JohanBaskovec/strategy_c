@@ -5,10 +5,11 @@
 #include "texture_enum.h"
 
 typedef struct Sprite {
-    bool alive;
     Box3f box;
 } Sprite;
 
+Sprite
+spriteCreate(Box3f box);
 typedef struct SpriteArray {
     int length;
     int allocated;

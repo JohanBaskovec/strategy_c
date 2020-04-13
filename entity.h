@@ -11,7 +11,12 @@ typedef struct Entity {
     Box3f box;
     int ai;
     Vec3f velocity;
+    bool hovered;
+    bool selected;
 } Entity;
+
+Entity
+entityCreate();
 
 typedef struct EntityArray {
     int length;

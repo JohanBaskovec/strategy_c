@@ -63,3 +63,23 @@ vec3fMulf(Vec3f vec, float f) {
     };
     return ret;
 }
+
+Vec3f
+vec3fDivf(Vec3f vec, float f) {
+    Vec3f ret = {
+        .x = vec.x / f,
+        .y = vec.y / f,
+        .z = vec.z / f
+    };
+    return ret;
+}
+
+Vec3f
+vec3fSubf(Vec3f vec, float f) {
+    Vec3f ret = {
+        .x = vec.x - f,
+        .y = vec.y - f,
+        .z = vec.z - f
+    };
+    return ret;
+}

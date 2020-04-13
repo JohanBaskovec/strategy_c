@@ -27,21 +27,12 @@ worldSetDifficulty(int x, int y, float value);
 void
 addWall(int x, int y) {
     worldSetDifficulty(x, y, 1);
-    Entity entity = {
-        .texture = TEXTURE_WALL
-        , .alive = true
-        , .box = {
-            .position = {x, y, 1}
-            , .size = graphics.tileSize
-        }
-        , .velocity = vec3fZero
-    };
-    Sprite sprite = {
-        .alive = true,
-        .box = entity.box
-    };
-    int spriteI = graphicsAddSprite(entity.texture, sprite);
-    entity.spriteIndex = spriteI;
+    Vec3f p = {x, y, 1};
+    Box3f b = box3fCreate(p, graphics.tileSize);
+    Sprite sprite = spriteCreate(b);
+    enum Texture texture = TEXTURE_WALL;
+    int spriteI = graphicsAddSprite(texture, sprite);
+    Entity entity = entityCreate(b, texture, spriteI);
     arrayAdd(world.entities, entity);
 }
 
@@ -61,25 +52,16 @@ worldInit() {
 
     for (int x = 0 ; x < world.width ; x++) {
         for (int y = 0 ; y < world.height ; y++) {
-            enum Texture texture;
             if (rand() % 5 == 0) {
                 addWall(x, y);
             }
-            Entity entity = {
-                .texture = TEXTURE_WOOD_FLOOR
-                , .alive = true
-                , .box = {
-                    .position = {x, y, 0}
-                    , .size = graphics.tileSize
-                }
-                , .velocity = vec3fZero
-            };
-            Sprite sprite = {
-                .alive = true,
-                .box = entity.box
-            };
-            int spriteI = graphicsAddSprite(entity.texture, sprite);
-            entity.spriteIndex = spriteI;
+            Vec3f p = {x, y, 0};
+            Box3f b = box3fCreate(p, graphics.tileSize);
+
+            Sprite sprite = spriteCreate(b);
+            enum Texture texture = TEXTURE_WOOD_FLOOR;
+            int spriteI = graphicsAddSprite(texture, sprite);
+            Entity entity = entityCreate(b, texture, spriteI);
             arrayAdd(world.entities, entity);
         }
     }
@@ -92,24 +74,13 @@ worldInit() {
         };
         int aci = aiComponentArrayAdd(ac);
         enum Texture texture = TEXTURE_DIRT_FLOOR;
-        Box3f box = {
-            .position = {1, 1, 1}
-            , .size = graphics.tileSize
-        };
-        Sprite sprite = {
-            .alive = true
-            , .box = box
-        };
+        Vec3f p = {1, 1, 1};
+        Box3f box = box3fCreate(p, graphics.tileSize);
+        Sprite sprite = spriteCreate(box);
         int spriteI = graphicsAddSprite(texture, sprite);
 
-        Entity entity = {
-            .texture = texture
-            , .alive = true
-            , .box = box
-            , .ai = aci
-            , .spriteIndex = spriteI
-            , .velocity = vec3fZero
-        };
+        Entity entity = entityCreate(box, texture, spriteI);
+        entity.ai = aci;
         world.aiComponents.data[aci].entity = world.entities.length;
         arrayAdd(world.entities, entity);
     }
@@ -139,10 +110,10 @@ void
 worldUpdate() {
     for (int i = 0 ; i < world.entities.length ; i++) {
         Entity *entity = &world.entities.data[i];
-        entity->box.position = vec3fAdd(entity->box.position, entity->velocity);
+        entity->box = box3fMoveVec3f(entity->box, entity->velocity);
 
         Sprite *sprite = graphicsGetSprite(entity->texture, entity->spriteIndex);
-        sprite->box.position = entity->box.position;
+        sprite->box = entity->box;
     }
     for (int i = 0 ; i < world.aiComponents.length ; i++) {
         AiComponent *e = &world.aiComponents.data[i];
