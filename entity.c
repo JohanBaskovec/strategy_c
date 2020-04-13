@@ -18,6 +18,6 @@ entityCreate(
     ret.box = box;
     ret.hovered = false;
     ret.selected = false;
-    ret.texture = TEXTURE_DIRT_FLOOR;
+    ret.texture = texture;
     return ret;
 }

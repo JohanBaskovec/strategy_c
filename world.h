@@ -41,4 +41,7 @@ worldGetDifficulty(int x, int y);
 
 void
 worldSetDifficulty(int x, int y, float value);
+
+Entity*
+worldGetEntity(int i);
 #endif

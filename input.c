@@ -10,6 +10,8 @@ findHoveredObject();
 
 void
 inputInit() {
+    input.hoveredEntity = -1;
+    input.selectedEntity = -1;
     for (int i = 0 ; i < KEY_NUMBER ; i++) {
         input.timeLimit[i] = 0;
         input.lastPress[i] = 0;
@@ -91,6 +93,22 @@ inputPollEvents() {
 }
 
 
+Entity*
+getHoveredEntity() {
+    if (input.hoveredEntity == -1) {
+        return NULL;
+    }
+    return worldGetEntity(input.hoveredEntity);
+}
+
+Entity*
+getSelectedEntity() {
+    if (input.selectedEntity == -1) {
+        return NULL;
+    }
+    return worldGetEntity(input.selectedEntity);
+}
+
 void
 findHoveredObject() {
     #ifdef OBJECT_SELECTION_LOG
@@ -101,27 +119,63 @@ findHoveredObject() {
     float rayStepLength = vec3fLength(rayStep);
     double rayLength = 0;
     Vec3f rayPos = startingPos;
-    while (rayLength < 30) {
+    bool intersect = false;
+    Entity *currentlyHovered = getHoveredEntity();
+    if (currentlyHovered != NULL) {
+        input.hoveredEntity = -1;
+        currentlyHovered->hovered = false;
+    }
+
+    while (rayLength < 10) {
         rayPos = vec3fAdd(rayPos, rayStep);
         for (int i = 0 ; i < world.entities.length ; i++) {
             Entity *e = &world.entities.data[i];
             if (box3fContainsVec3f(e->box, rayPos)) {
+                //SDL_Log("box: %d %f:%f:%f", i, e->box.position.x, e->box.position.y, e->box.position.z);
                 input.hoveredEntity = i;
                 e->hovered = true;
                 #ifdef OBJECT_SELECTION_LOG
                 SDL_Log("Hover %d", i);
                 #endif
                 if (input.pressedKeysThisFrame[KEY_SELECT]) {
+                    Entity *currentlySelected = getSelectedEntity();
+                    if (currentlySelected != NULL) {
+                        currentlySelected->selected = false;
+                        Sprite *s = graphicsGetEntitySprite(currentlySelected);
+                        s->selected = false;
+                    }
+
+                    Box3f b = e->box;
+                    Vec3f v = rayPos;
+
                     input.selectedEntity = i;
                     e->selected = true;
-                    SDL_Log("Selected %d", i);
-                }
 
-                return;
+                    Sprite *s = graphicsGetEntitySprite(e);
+
+                    s->selected = true;
+                    SDL_Log("ray pos: %f:%f:%f", rayPos.x, rayPos.y, rayPos.z);
+                    SDL_Log("Selected %d %f %d %f:%f:%f", e->texture, e->box.min.x, i, s->box.position.x, s->box.position.y, s->box.position.z);
+                }
+                intersect = true;
+                goto end;
+
             }
         }
         Vec3f rev = vec3fSub(rayPos, startingPos);
         rayLength = vec3fLength(rev);
+    }
+end:
+    if (!intersect) {
+        Entity *selected = getSelectedEntity();
+        if (selected != NULL) {
+            if (input.pressedKeysThisFrame[KEY_SELECT]) {
+                selected->selected = false;
+                Sprite *s = graphicsGetEntitySprite(selected);
+                s->selected = false;
+                input.selectedEntity = -1;
+            }
+        }
     }
 }
 

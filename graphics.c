@@ -59,6 +59,11 @@ graphicsGetSprite(enum Texture texture, int i) {
     return &graphics.sprites[texture].data[i];
 }
 
+Sprite*
+graphicsGetEntitySprite(Entity *e) {
+    return graphicsGetSprite(e->texture, e->spriteIndex);
+}
+
 void
 openglDebugMessageCallback(GLenum source, GLenum type, GLuint id,
                            GLenum severity, GLsizei length,
@@ -210,6 +215,7 @@ graphicsRender() {
             Mat4f modelMat = mat4fVec3fTranslate(identityMat, s->box.position);
             modelMat = mat4fScale(modelMat, s->box.size);
 
+            glUniform1i(defaultProgram.selected, s->selected);
             glUniformMatrix4fv(defaultProgram.model, 1, false, (GLfloat*)&modelMat);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);

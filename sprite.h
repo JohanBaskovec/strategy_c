@@ -6,6 +6,7 @@
 
 typedef struct Sprite {
     Box3f box;
+    bool selected;
 } Sprite;
 
 Sprite

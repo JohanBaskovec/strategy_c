@@ -1,11 +1,13 @@
+#include <stdio.h>
 #include <stdbool.h>
 #include "box3f.h"
 
 bool
 box3fContainsVec3f(Box3f b, Vec3f v) {
-    return (v.x >= b.min.x && v.x <= b.max.x) &&
+    bool c = (v.x >= b.min.x && v.x <= b.max.x) &&
            (v.y >= b.min.y && v.y <= b.max.y) &&
            (v.z >= b.min.z && v.z <= b.max.z);
+    return c;
 }
 
 Box3f

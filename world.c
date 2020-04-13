@@ -34,12 +34,18 @@ addWall(int x, int y) {
     int spriteI = graphicsAddSprite(texture, sprite);
     Entity entity = entityCreate(b, texture, spriteI);
     arrayAdd(world.entities, entity);
+    SDL_Log("Add wall, spriteI = %d", spriteI);
+}
+
+Entity*
+worldGetEntity(int i) {
+    return &world.entities.data[i];
 }
 
 void
 worldInit() {
-    world.width = 10;
-    world.height = 10;
+    world.width = 20;
+    world.height = 20;
     world.tilesN = world.width * world.height;
     world.difficultyMap = malloc(world.tilesN * sizeof(float));
     for (int x = 0 ; x < world.width ; x++) {
@@ -63,6 +69,7 @@ worldInit() {
             int spriteI = graphicsAddSprite(texture, sprite);
             Entity entity = entityCreate(b, texture, spriteI);
             arrayAdd(world.entities, entity);
+            SDL_Log("Add floor, spriteI = %d, text=%d", spriteI, texture);
         }
     }
 
@@ -76,13 +83,16 @@ worldInit() {
         enum Texture texture = TEXTURE_DIRT_FLOOR;
         Vec3f p = {1, 1, 1};
         Box3f box = box3fCreate(p, graphics.tileSize);
+        SDL_Log("box of ai: %f", box.min.x);
         Sprite sprite = spriteCreate(box);
         int spriteI = graphicsAddSprite(texture, sprite);
+        SDL_Log("sprite i: %d", spriteI);
 
         Entity entity = entityCreate(box, texture, spriteI);
         entity.ai = aci;
         world.aiComponents.data[aci].entity = world.entities.length;
         arrayAdd(world.entities, entity);
+        SDL_Log("Add char, spriteI = %d", spriteI);
     }
 
     /*

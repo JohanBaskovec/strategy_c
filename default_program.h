@@ -13,6 +13,8 @@ typedef struct DefaultProgram {
     GLint projection;
 
     GLint diffuse;
+
+    GLint selected;
 } DefaultProgram;
 
 DefaultProgram

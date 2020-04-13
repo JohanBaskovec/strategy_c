@@ -7,6 +7,7 @@
 #include "box3f.h"
 #include "sprite.h"
 #include "texture_enum.h"
+#include "entity.h"
 
 #define ZNEAR (0.1)
 #define ZFAR (100.0)
@@ -37,5 +38,8 @@ graphicsAddSprite(enum Texture texture, Sprite sprite);
 
 Sprite*
 graphicsGetSprite(enum Texture texture, int i);
+
+Sprite*
+graphicsGetEntitySprite(Entity *e);
 
 #endif
