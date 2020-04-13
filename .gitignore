@@ -10,4 +10,10 @@ build/cmake_install.cmake
 build/Makefile
 build/strategy
 build/strategy_test
+benchmarks/build/CMakeCache.txt
+benchmarks/build/CMakeFiles
+benchmarks/build/cmake_install.cmake
+benchmarks/build/Makefile
+benchmarks/build/array_benchmarks
+
 

@@ -18,6 +18,7 @@ typedef struct AiComponent {
     Vec3fArray path;
     int pathIndex;
     float movementSpeed;
+    float hunger;
 } AiComponent;
 
 void

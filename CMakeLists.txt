@@ -42,11 +42,18 @@ add_executable(strategy
     ${SOURCES}
 )
 target_link_libraries(strategy ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} m)
-add_executable(strategy_test
-    maths_test.h
-    main_test.c
-    ${SOURCES}
-)
-target_link_libraries(strategy_test ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} m)
+#add_executable(strategy_test
+#    maths_test.h
+#    main_test.c
+#    ${SOURCES}
+#)
+#target_link_libraries(strategy_test ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} m)
+#
+#add_executable(strategy_array_benchmarks
+#    benchmarks/array_benchmarks.c
+#    ${SOURCES}
+#)
+#target_link_libraries(strategy_array_benchmarks ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} m)
+
 
 
