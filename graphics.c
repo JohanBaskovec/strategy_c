@@ -17,8 +17,6 @@
 
 #include "3d_data.h"
 
-static int screenWidth = 1200;
-static int screenHeight = 1000;
 static float screenRatio = 0;
 static float fovDegree = 90;
 static float fovRadians = 0;
@@ -84,6 +82,8 @@ openglDebugMessageCallback(GLenum source, GLenum type, GLuint id,
 
 void
 graphicsInit() {
+    graphics.screenWidth = 1200;
+    graphics.screenHeight = 1000;
     // make sure that sprite array starts empty
     for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
         SpriteArray a = fixedArrayCreate(GRAPHICS_MAX_SPRITES);
@@ -93,7 +93,7 @@ graphicsInit() {
     graphics.tileSize = tileSize;
     identityMat = mat4fIdentity();
     SDL_Log("Opening window...");
-    screenRatio = (screenWidth * 1.0) / screenHeight;
+    screenRatio = (graphics.screenWidth * 1.0) / graphics.screenHeight;
     fovRadians = degreesToRadians(fovDegree);
     int err = SDL_Init(SDL_INIT_VIDEO);
     if (err) {
@@ -112,8 +112,8 @@ graphicsInit() {
         "Pong"
         , SDL_WINDOWPOS_CENTERED
         , SDL_WINDOWPOS_CENTERED
-        , screenWidth
-        , screenHeight
+        , graphics.screenWidth
+        , graphics.screenHeight
         , SDL_WINDOW_OPENGL
     );
 
@@ -228,12 +228,11 @@ graphicsInit() {
     glBindVertexArray(0);
 
     SDL_Log("OpengL: available image units = %d\n",  GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
-    SDL_SetRelativeMouseMode(true);
 
-    glViewport(0, 0, screenWidth, screenHeight);
+    glViewport(0, 0, graphics.screenWidth, graphics.screenHeight);
     glUseProgram(defaultProgram.id);
-    Mat4f projectionMat = mat4fPerspective(fovRadians, screenRatio, ZNEAR, ZFAR);
-    glUniformMatrix4fv(defaultProgram.projection, 1, false, (GLfloat*)&projectionMat);
+    graphics.projectionMatrix = mat4fPerspective(fovRadians, screenRatio, ZNEAR, ZFAR);
+    glUniformMatrix4fv(defaultProgram.projection, 1, false, (GLfloat*)&graphics.projectionMatrix);
     // bind the sampler2d in the shader to the texture GL_TEXTURE0
     glUniform1i(defaultProgram.diffuse, 0);
 

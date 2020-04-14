@@ -25,17 +25,32 @@ worldGetDifficulty(int x, int y);
 void
 worldSetDifficulty(int x, int y, float value);
 
-void
-addWall(int x, int y) {
-    worldSetDifficulty(x, y, 1);
-    Vec3f p = {x, y, 1};
-    Box3f b = box3fCreate(p, graphics.tileSize);
+int
+worldAddEntity(Entity entity) {
+    int i = world.entities.length;
+    arrayAdd(world.entities, entity);
+    return i;
+}
+
+int
+createAndAddEntity(Vec3f position, enum Texture texture) {
+    if (position.z == 1) {
+        worldSetDifficulty(position.x, position.y, 1);
+    }
+    Box3f b = box3fCreate(position, graphics.tileSize);
     Sprite sprite = spriteCreate(b);
-    enum Texture texture = TEXTURE_WALL;
     int spriteI = graphicsAddSprite(texture, sprite);
     Entity entity = entityCreate(b, texture, spriteI);
-    arrayAdd(world.entities, entity);
-    //SDL_Log("Add wall, spriteI = %d", spriteI);
+    int entityI = worldAddEntity(entity);
+    Sprite *s = graphicsGetSprite(texture, spriteI);
+    s->entity = entityI;
+    return entityI;
+}
+
+void
+addWall(int x, int y) {
+    Vec3f p = {x, y, 1};
+    createAndAddEntity(p, TEXTURE_WALL);
 }
 
 Entity*
@@ -45,6 +60,7 @@ worldGetEntity(int i) {
 
 void
 worldInit() {
+    world.end = false;
     world.width = 20;
     world.height = 20;
     world.tilesN = world.width * world.height;
@@ -63,37 +79,23 @@ worldInit() {
                 addWall(x, y);
             }
             Vec3f p = {x, y, 0};
-            Box3f b = box3fCreate(p, graphics.tileSize);
-
-            Sprite sprite = spriteCreate(b);
-            enum Texture texture = TEXTURE_WOOD_FLOOR;
-            int spriteI = graphicsAddSprite(texture, sprite);
-            Entity entity = entityCreate(b, texture, spriteI);
-            arrayAdd(world.entities, entity);
-            //SDL_Log("Add floor, spriteI = %d, text=%d", spriteI, texture);
+            createAndAddEntity(p, TEXTURE_WOOD_FLOOR);
         }
     }
 
 
     {
+        enum Texture texture = TEXTURE_DIRT_FLOOR;
+        Vec3f p = {1, 1, 1};
+        int entityI = createAndAddEntity(p, texture);
         AiComponent ac = {
             .hasTarget = false
             , .movementSpeed = 0.05
+            , .entity = entityI
         };
         int aci = aiComponentArrayAdd(ac);
-        enum Texture texture = TEXTURE_DIRT_FLOOR;
-        Vec3f p = {1, 1, 1};
-        Box3f box = box3fCreate(p, graphics.tileSize);
-        //SDL_Log("box of ai: %f", box.min.x);
-        Sprite sprite = spriteCreate(box);
-        int spriteI = graphicsAddSprite(texture, sprite);
-        //SDL_Log("sprite i: %d", spriteI);
-
-        Entity entity = entityCreate(box, texture, spriteI);
-        entity.ai = aci;
-        world.aiComponents.data[aci].entity = world.entities.length;
-        arrayAdd(world.entities, entity);
-        //SDL_Log("Add char, spriteI = %d", spriteI);
+        Entity *e = worldGetEntity(entityI);
+        e->ai = aci;
     }
 }
 

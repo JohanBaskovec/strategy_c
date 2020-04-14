@@ -1,6 +1,7 @@
 #ifndef ST_MAT4F
 #define ST_MAT4F
 #include "vec3f.h"
+#include "vec4f.h"
 
 typedef struct Mat4f {
     // column 0
@@ -71,4 +72,6 @@ mat4fInverseTranspose(Mat4f mat);
 void
 mat4fPrint(Mat4f *mat);
 
+Vec3f
+mat4fUnproject(Vec3f win, Mat4f model, Mat4f proj, Vec4f viewport);
 #endif

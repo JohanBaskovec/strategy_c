@@ -12,6 +12,7 @@ static Vec3f worldUp = {
 
 void
 cameraInit() {
+    camera.mode = CAMERA_MODE_RTS;
     camera.yaw = -90.0;
     camera.pitch = 0.0;
 
@@ -26,6 +27,8 @@ cameraInit() {
     camera.up.x = 0.0;
     camera.up.y = 1.0;
     camera.up.z = 0.0;
+
+    camera.movementSpeed = 0.3;
     updateCameraVector();
 }
 
@@ -56,4 +59,40 @@ void
 cameraMove(Vec3f v) {
     camera.position = vec3fAdd(camera.position, v);
     cameraInitTargetAndViewMatrix();
+}
+
+void
+cameraMoveBack() {
+    Vec3f v = vec3fMulf(camera.front, -camera.movementSpeed);
+    cameraMove(v);
+}
+
+void
+cameraMoveFront() {
+    Vec3f v = vec3fMulf(camera.front, camera.movementSpeed);
+    cameraMove(v);
+}
+
+void
+cameraMoveUp() {
+    Vec3f v = vec3fMulf(camera.up, camera.movementSpeed);
+    cameraMove(v);
+}
+
+void
+cameraMoveLeft() {
+    Vec3f v = vec3fMulf(camera.right, -camera.movementSpeed);
+    cameraMove(v);
+}
+
+void
+cameraMoveRight() {
+    Vec3f v = vec3fMulf(camera.right, camera.movementSpeed);
+    cameraMove(v);
+}
+
+void
+cameraMoveDown() {
+    Vec3f v = vec3fMulf(camera.up, -camera.movementSpeed);
+    cameraMove(v);
 }

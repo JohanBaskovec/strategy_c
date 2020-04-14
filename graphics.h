@@ -20,6 +20,9 @@ typedef struct TextureConfig {
 typedef struct Graphics {
     Vec3f tileSize;
     SpriteArray sprites[TEXTURE_NUMBER];
+    int screenWidth;
+    int screenHeight;
+    Mat4f projectionMatrix;
 } Graphics;
 
 extern Graphics graphics;

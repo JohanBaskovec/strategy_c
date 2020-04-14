@@ -11,6 +11,8 @@ typedef enum Key {
     , KEY_CAMERA_MOVE_RIGHT
     , KEY_CAMERA_MOVE_FRONT
     , KEY_CAMERA_MOVE_BACK
+    , KEY_CAMERA_MOVE_DOWN
+    , KEY_CAMERA_MOVE_UP
 
     , KEY_MOVE_TO_RANDOM_LOCATION
     , KEY_GIVE_MOVE_ORDER
@@ -19,15 +21,32 @@ typedef enum Key {
     , KEY_NUMBER
 } Key;
 
+typedef enum InputMode {
+    INPUT_MODE_RTS
+    , INPUT_MODE_FPS
+    , INPUT_MODE_ALL
+    , INPUT_MODE_NUMBER
+} InputMode;
+
+typedef enum MouseWheelInput {
+    MOUSE_WHEEL_UP
+    , MOUSE_WHEEL_DOWN
+    , MOUSE_WHEEL_NUMBER
+} MouseWheelInput;
+
 typedef struct Input {
     bool pressedKeys[KEY_NUMBER];
     bool pressedKeysThisFrame[KEY_NUMBER];
-    Key keyMapping[SDL_NUM_SCANCODES];
+    Key keyMapping[INPUT_MODE_NUMBER][SDL_NUM_SCANCODES];
     Key mouseMapping[4];
+    Key mouseWheelMapping[INPUT_MODE_NUMBER][MOUSE_WHEEL_NUMBER];
     Uint32 timeLimit[KEY_NUMBER];
     Uint32 lastPress[KEY_NUMBER];
     int hoveredEntity;
     int selectedEntity;
+    InputMode mode;
+    int mouseX;
+    int mouseY;
 } Input;
 
 extern Input input;

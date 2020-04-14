@@ -17,6 +17,7 @@ typedef struct World {
     float *difficultyMap;
     EntityArray entities;
     AiComponentArray aiComponents;
+    bool end;
 } World;
 
 extern World world;

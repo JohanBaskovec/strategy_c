@@ -17,4 +17,13 @@ vec4fAddVec4f(Vec4f a, Vec4f b);
 Vec4f
 vec4fSubVec4f(Vec4f a, Vec4f b);
 
+Vec4f
+vec4fSubf(Vec4f a, float f);
+
+Vec4f
+vec4fMulf(Vec4f a, float f);
+
+Vec4f
+vec4fDivf(Vec4f a, float f);
+
 #endif

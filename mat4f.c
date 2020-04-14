@@ -440,3 +440,31 @@ mat4fPrint(Mat4f *m) {
         m->m00, m->m13, m->m23, m->m33
     );
 }
+
+Vec4f
+mat4fMulVec4f(Mat4f m, Vec4f v) {
+    Vec4f r;
+    r.x = v.x * m.m00 + v.y * m.m10 + v.z * m.m20 + v.w * m.m30;
+    r.y = v.x * m.m01 + v.y * m.m11 + v.z * m.m21 + v.w * m.m31;
+    r.z = v.x * m.m02 + v.y * m.m12 + v.z * m.m22 + v.w * m.m32;
+    r.w = v.x * m.m03 + v.y * m.m13 + v.z * m.m23 + v.w * m.m33;
+    return r;
+}
+
+// source: https://github.com/g-truc/glm/blob/488be5b75ae7071181a24a47e43c68b58a721d08/glm/ext/matrix_projection.inl#L63
+Vec3f
+mat4fUnproject(Vec3f win, Mat4f model, Mat4f proj, Vec4f viewport) {
+    Mat4f inverse = mat4fInverse(mat4fMulMat4f(proj, model));
+
+    Vec4f tmp  = {win.x, win.y, win.z, 1};
+    tmp.x = (tmp.x - viewport.x) / viewport.z;
+    tmp.y = (tmp.y - viewport.y) / viewport.w;
+    tmp = vec4fMulf(tmp, 2);
+    tmp = vec4fSubf(tmp, 1);
+
+    Vec4f obj = mat4fMulVec4f(inverse, tmp);
+    obj = vec4fDivf(obj, obj.w);
+
+    Vec3f ret = {obj.x, obj.y, obj.z};
+    return ret;
+}
