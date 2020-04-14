@@ -26,6 +26,7 @@ static float fovRadians = 0;
 GLuint defaultVao;
 GLuint defaultVbo;
 SDL_Window *window;
+SDL_GLContext glContext;
 GLuint textures[TEXTURE_NUMBER];
 TextureConfig textureConfigs[TEXTURE_NUMBER] = {
     {
@@ -119,7 +120,7 @@ graphicsInit() {
     }
     SDL_Log("Window opened.");
 
-    SDL_GL_CreateContext(window);
+    glContext = SDL_GL_CreateContext(window);
     if (err) {
         fatalSdlError("SDL_GL_CreateContext");
     }
@@ -214,6 +215,8 @@ graphicsRender() {
             Sprite *s = &a->data[x];
             Mat4f modelMat = mat4fVec3fTranslate(identityMat, s->box.position);
             modelMat = mat4fScale(modelMat, s->box.size);
+            //Vec3f rot = {1, 0, 0};
+            //modelMat = mat4fVec3fRotate(modelMat, degreesToRadians(45), rot);
 
             glUniform1i(defaultProgram.selected, s->selected);
             glUniformMatrix4fv(defaultProgram.model, 1, false, (GLfloat*)&modelMat);
@@ -229,6 +232,8 @@ graphicsRender() {
 
 void
 graphicsFree() {
+    // this frees up textures, shaders etc.
+    SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
 }
 

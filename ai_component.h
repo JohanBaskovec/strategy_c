@@ -3,12 +3,6 @@
 #include <stdbool.h>
 #include "vec3f.h"
 
-typedef struct Vec3fArray {
-    int length;
-    int allocated;
-    Vec3f *data;
-} Vec3fArray;
-
 typedef struct AiComponent {
     int entity;
     bool hasTarget;
@@ -21,7 +15,11 @@ typedef struct AiComponent {
     float hunger;
 } AiComponent;
 
+ARRAY_DECLARE(AiComponent, AiComponentArray);
+
 void
 aiUpdate(AiComponent *ai);
 
+void
+aiComponentFree(AiComponent *ai);
 #endif

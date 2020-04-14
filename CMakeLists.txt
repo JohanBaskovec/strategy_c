@@ -36,6 +36,8 @@ set(SOURCES
     entity.c
     ai_component.c
     box3f.c
+    ai_system.c
+    path_finding.c
 )
 
 add_executable(strategy

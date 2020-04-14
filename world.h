@@ -10,12 +10,6 @@
 #include "entity.h"
 #include "ai_component.h"
 
-typedef struct AiComponentArray {
-    int length;
-    AiComponent *data;
-} AiComponentArray;
-
-
 typedef struct World {
     int width;
     int height;
@@ -44,4 +38,7 @@ worldSetDifficulty(int x, int y, float value);
 
 Entity*
 worldGetEntity(int i);
+
+void
+worldFree();
 #endif

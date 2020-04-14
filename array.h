@@ -84,6 +84,14 @@ voidArrayRemove(Array *a, int i, size_t sizeOfElement) {
 #define arrayFree(a)\
     free(a.data);\
     a.length = 0;\
-    a.allocated = 0;
+    a.allocated = 0;\
+    a.data = NULL;
+
+#define ARRAY_DECLARE(type, name)\
+    typedef struct name {\
+        int length;\
+        int allocated;\
+        type *data;\
+    } name;
 
 #endif

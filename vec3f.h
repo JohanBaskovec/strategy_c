@@ -1,5 +1,6 @@
 #ifndef ST_VEC3F
 #define ST_VEC3F
+#include "array.h"
 
 typedef struct Vec3f {
     float x;
@@ -10,6 +11,8 @@ typedef struct Vec3f {
 #define Vec3f_size (3 * sizeof(float))
 
 extern Vec3f vec3fZero;
+
+ARRAY_DECLARE(Vec3f, Vec3fArray);
 
 float
 vec3fLength(Vec3f vec);

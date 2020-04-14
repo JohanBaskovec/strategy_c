@@ -12,6 +12,7 @@
 #include "input.h"
 #include "world.h"
 #include "mat4f.h"
+#include "ai_system.h"
 
 float movementSpeed = 0.1;
 
@@ -30,6 +31,7 @@ int main(int argc, char *argv[]) {
     inputInit();
     graphicsInit();
     worldInit();
+    aiSystemInit();
 
     while (true) {
         graphicsRender();
@@ -66,6 +68,8 @@ int main(int argc, char *argv[]) {
 
 end:
 
+    aiSystemFree();
+    worldFree();
     graphicsFree();
     SDL_Quit();
 

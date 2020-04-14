@@ -49,9 +49,9 @@ programCreate(
         , char const *fragmentShaderFileName
         , char const *geometricShaderFileName
 ) {
-    char *vsSrc;
-    char *fsSrc;
-    char *gsSrc;
+    char *vsSrc = NULL;
+    char *fsSrc = NULL;
+    char *gsSrc = NULL;
 
     readShaderSource(vertexShaderFileName, &vsSrc);
     readShaderSource(fragmentShaderFileName, &fsSrc);
@@ -98,6 +98,9 @@ programCreate(
     }
 
     glDeleteShader(vertexShader);
+    free(vsSrc);
+    free(gsSrc);
+    free(fsSrc);
     glDeleteShader(fragmentShader);
     if (geometricShaderFileName != NULL) {
         glDeleteShader(geometricShader);

@@ -10,6 +10,7 @@
 #include "array.h"
 #include "error.h"
 #include "ai_component.h"
+#include "ai_system.h"
 
 int
 aiComponentArrayAdd(AiComponent e);
@@ -125,10 +126,7 @@ worldUpdate() {
         Sprite *sprite = graphicsGetSprite(entity->texture, entity->spriteIndex);
         sprite->box = entity->box;
     }
-    for (int i = 0 ; i < world.aiComponents.length ; i++) {
-        AiComponent *e = &world.aiComponents.data[i];
-        aiUpdate(e);
-    }
+    aiSystemUpdate();
 }
 
 int
@@ -149,4 +147,10 @@ worldMoveRandom() {
     SDL_Log("worldMoveRandom, target=%d:%d", goalX, goalY);
     world.aiComponents.data[0].target = target;
     world.aiComponents.data[0].hasTarget = true;
+}
+
+void
+worldFree() {
+    arrayFree(world.entities);
+    free(world.difficultyMap);
 }
