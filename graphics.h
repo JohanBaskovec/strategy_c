@@ -24,6 +24,8 @@ typedef struct Graphics {
 
 extern Graphics graphics;
 
+#define GRAPHICS_MAX_SPRITES 4096
+
 void
 graphicsInit();
 
@@ -41,5 +43,8 @@ graphicsGetSprite(enum Texture texture, int i);
 
 Sprite*
 graphicsGetEntitySprite(Entity *e);
+
+void
+graphicsInitBufferData();
 
 #endif

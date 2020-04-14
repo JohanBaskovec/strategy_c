@@ -13,7 +13,7 @@ defaultProgramCreate() {
     SET_ATTRIB_LOCATION(aPos);
     SET_ATTRIB_LOCATION(aTexCoords);
 
-    SET_UNIFORM_LOCATION(model);
+    SET_ATTRIB_LOCATION(model);
     SET_UNIFORM_LOCATION(projection);
     SET_UNIFORM_LOCATION(view);
 

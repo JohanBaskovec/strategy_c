@@ -1,5 +1,6 @@
 #ifndef ST_ERROR
 #define ST_ERROR
+#include <SDL.h>
 
 #define fatalError(f, ...) \
     SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, f, ## __VA_ARGS__);\

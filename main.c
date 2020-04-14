@@ -36,6 +36,11 @@ int main(int argc, char *argv[]) {
     Uint32 lastFrameTicks = 0;
     Uint32 secondTimer = 0;
     int fps = 0;
+    int frameCount = 0;
+
+    bool gi = false;
+
+
     while (true) {
         graphicsRender();
 
@@ -43,6 +48,11 @@ int main(int argc, char *argv[]) {
 
         worldUpdate();
         Uint32 ticks = SDL_GetTicks();
+        if (!gi) {
+            graphicsInitBufferData();
+            gi = true;
+
+        }
         Uint32 ticksSinceLastFrame = ticks - lastFrameTicks;
 
         if (input.pressedKeys[KEY_ESCAPE]) {
@@ -51,48 +61,31 @@ int main(int argc, char *argv[]) {
         if (input.pressedKeys[KEY_CAMERA_MOVE_BACK]) {
             Vec3f v = vec3fMulf(camera.front, -movementSpeed);
             cameraMove(v);
-            /*
-            camera.position.x -= movementSpeed * camera.front.x;
-            camera.position.y -= movementSpeed * camera.front.y;
-            camera.position.z -= movementSpeed * camera.front.z;
-            */
         } else if (input.pressedKeys[KEY_CAMERA_MOVE_FRONT]) {
             Vec3f v = vec3fMulf(camera.front, movementSpeed);
             cameraMove(v);
-            /*
-            camera.position.x += movementSpeed * camera.front.x;
-            camera.position.y += movementSpeed * camera.front.y;
-            camera.position.z += movementSpeed * camera.front.z;
-            */
         }
         if (input.pressedKeys[KEY_CAMERA_MOVE_LEFT]) {
             Vec3f v = vec3fMulf(camera.right, -movementSpeed);
             cameraMove(v);
-            /*
-            camera.position.x -= movementSpeed * camera.right.x;
-            camera.position.y -= movementSpeed * camera.right.y;
-            camera.position.z -= movementSpeed * camera.right.z;
-            */
 
         } else if (input.pressedKeys[KEY_CAMERA_MOVE_RIGHT]) {
             Vec3f v = vec3fMulf(camera.right, movementSpeed);
             cameraMove(v);
-            /*
-            camera.position.x += movementSpeed * camera.right.x;
-            camera.position.y += movementSpeed * camera.right.y;
-            camera.position.z += movementSpeed * camera.right.z;
-            */
         }
 
         DO_WITH_MINIMUM_DELAY(KEY_MOVE_TO_RANDOM_LOCATION, worldMoveRandom);
 
         secondTimer += ticksSinceLastFrame;
         if (secondTimer >= 1000) {
-            fps = 1000.0 / ticksSinceLastFrame;
+            SDL_Log("%d frames rendering in %d milliseconds.", frameCount, secondTimer);
+            fps = (frameCount / (secondTimer * 1.0)) * 1000;
             SDL_Log("FPS: %d", fps);
             secondTimer = 0;
+            frameCount = 0;
         }
         lastFrameTicks = ticks;
+        frameCount++;
     }
 
 end:

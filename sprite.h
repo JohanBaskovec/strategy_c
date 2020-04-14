@@ -6,9 +6,9 @@
 #include "mat4f.h"
 
 typedef struct Sprite {
+    Mat4f modelMatrix;
     Box3f box;
     bool selected;
-    Mat4f modelMatrix;
 } Sprite;
 
 Sprite

@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include "error.h"
 typedef struct ArrayElement {
     bool alive;
 } ArrayElement;
@@ -56,6 +57,30 @@ voidArrayRemove(Array *a, int i, size_t sizeOfElement) {
     a->length--;
 }
 
+static inline int
+fixedVoidArrayAdd(Array *a, size_t sizeOfElement) {
+    if (a->length < a->allocated) {
+        int newIndex = a->length;
+        a->length++;
+        return newIndex;
+    }
+    // no free space, crash
+    fatalError("fixedVoidArrayAdd: No free space in array.");
+    return 0;
+}
+
+static inline void
+fixedVoidArrayRemove(Array *a, int i, size_t sizeOfElement) {
+    // if removing the last element, we don't have to copy elements
+    if (a->length != i + 1) {
+        void *dest = a->data + (i * sizeOfElement);
+        void *source = a->data + (i * sizeOfElement) + sizeOfElement;
+        size_t count = sizeOfElement * (a->length - i - 1);
+        memcpy(dest, source, count);
+    }
+    a->length--;
+}
+
 
 #define arrayAdd(arr, element)\
     do {\
@@ -86,6 +111,30 @@ voidArrayRemove(Array *a, int i, size_t sizeOfElement) {
     a.length = 0;\
     a.allocated = 0;\
     a.data = NULL;
+
+#define fixedArrayAdd(arr, element)\
+    do {\
+        int newIndex = fixedVoidArrayAdd((Array*)&arr, sizeof(element));\
+        arr.data[newIndex] = element;\
+    } while(0);
+
+#define fixedArrayPtrAdd(arr, element)\
+    do {\
+        int newIndex = fixedVoidArrayAdd((Array*)arr, sizeof(element));\
+        arr->data[newIndex] = element;\
+    } while(0);
+
+#define fixedArrayRemove(arr, i)\
+    do {\
+        fixedVoidArrayRemove((Array*)&arr, i, sizeof(*arr.data));\
+    } while(0);
+
+#define fixedArrayCreate(size) \
+{\
+    .length = 0\
+    , .allocated = 0\
+    , .data = malloc(size)\
+}
 
 #define ARRAY_DECLARE(type, name)\
     typedef struct name {\

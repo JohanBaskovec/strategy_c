@@ -23,8 +23,12 @@ static float screenRatio = 0;
 static float fovDegree = 90;
 static float fovRadians = 0;
 
-GLuint defaultVao;
+GLuint defaultVao[TEXTURE_NUMBER];
 GLuint defaultVbo;
+GLuint instanceVbo[TEXTURE_NUMBER];
+GLuint ibo;
+DefaultProgram defaultProgram;
+Mat4f identityMat;
 SDL_Window *window;
 SDL_GLContext glContext;
 GLuint textures[TEXTURE_NUMBER];
@@ -34,11 +38,11 @@ TextureConfig textureConfigs[TEXTURE_NUMBER] = {
         .format = GL_RGBA
     }
     ,{
-        .name = "wood00.jpg",
+        .name = "wood00_256.jpg",
         .format = GL_RGB
     }
     ,{
-        .name = "wall.png",
+        .name = "wall_256.png",
         .format = GL_RGBA
     }
 };
@@ -77,14 +81,12 @@ openglDebugMessageCallback(GLenum source, GLenum type, GLuint id,
     );
 }
 
-DefaultProgram defaultProgram;
-Mat4f identityMat;
 
 void
 graphicsInit() {
     // make sure that sprite array starts empty
     for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
-        SpriteArray a = arrayCreate();
+        SpriteArray a = fixedArrayCreate(GRAPHICS_MAX_SPRITES);
         graphics.sprites[i] = a;
     }
     Vec3f tileSize = {1.0, 1.0, 1.0};
@@ -130,6 +132,7 @@ graphicsInit() {
 
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);  
 
     glDebugMessageCallback(openglDebugMessageCallback, NULL);
 
@@ -141,33 +144,57 @@ graphicsInit() {
 
     defaultProgram = defaultProgramCreate();
 
-    glGenVertexArrays(1, &defaultVao);
+    glGenVertexArrays(TEXTURE_NUMBER, defaultVao);
     glGenBuffers(1, &defaultVbo);
+    glGenBuffers(TEXTURE_NUMBER, instanceVbo);
 
-    glBindVertexArray(defaultVao);
     glBindBuffer(GL_ARRAY_BUFFER, defaultVbo);
-
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(
-            defaultProgram.aPos
-            , 3
-            , GL_FLOAT
-            , GL_FALSE
-            , 8 * sizeof(float)
-            , NULL
-    );
-    glEnableVertexAttribArray(defaultProgram.aPos);
+    for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
+        glBindVertexArray(defaultVao[i]);
+        glBindBuffer(GL_ARRAY_BUFFER, defaultVbo);
 
-    glVertexAttribPointer(
-            defaultProgram.aTexCoords
-            , 2
-            , GL_FLOAT
-            , GL_FALSE
-            , 8 * sizeof(float)
-            , (void*)(3 * sizeof(float))
-    );
-    glEnableVertexAttribArray(defaultProgram.aTexCoords);
+        glVertexAttribPointer(
+                defaultProgram.aPos
+                , 3
+                , GL_FLOAT
+                , GL_FALSE
+                , 8 * sizeof(float)
+                , NULL
+        );
+        glEnableVertexAttribArray(defaultProgram.aPos);
+
+        glVertexAttribPointer(
+                defaultProgram.aTexCoords
+                , 2
+                , GL_FLOAT
+                , GL_FALSE
+                , 8 * sizeof(float)
+                , (void*)(3 * sizeof(float))
+        );
+        glEnableVertexAttribArray(defaultProgram.aTexCoords);
+
+        glBindBuffer(GL_ARRAY_BUFFER, instanceVbo[i]);
+
+        for (int i = 0; i < 4; i++)
+        {
+            glVertexAttribPointer(
+                defaultProgram.model + i
+                , 4
+                , GL_FLOAT
+                , GL_FALSE
+                , sizeof(Sprite)
+                , (void *) (4 * sizeof(float) * i)
+            );
+            glEnableVertexAttribArray(defaultProgram.model + i);
+            glVertexAttribDivisor(defaultProgram.model + i, 1);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+
 
     SDL_Log("Loading textures...");
 
@@ -193,6 +220,19 @@ graphicsInit() {
     SDL_Log("Loading done.");
 }
 
+bool firstRender = true;
+
+void
+graphicsInitBufferData() {
+    for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
+        glBindVertexArray(defaultVao[i]);
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        SpriteArray *a = &graphics.sprites[i];
+        glBindBuffer(GL_ARRAY_BUFFER, instanceVbo[i]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Sprite) * a->length, a->data, GL_STATIC_DRAW);
+    }
+}
+
 void
 graphicsRender() {
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -203,20 +243,11 @@ graphicsRender() {
 
     glUniformMatrix4fv(defaultProgram.view, 1, false, (GLfloat*)&camera.viewMatrix);
 
-    glBindVertexArray(defaultVao);
-    glActiveTexture(GL_TEXTURE0);
-
     for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
+        glBindVertexArray(defaultVao[i]);
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         SpriteArray *a = &graphics.sprites[i];
-        for (int x = 0 ; x < a->length ; x++) {
-            Sprite *s = &a->data[x];
-
-            glUniform1i(defaultProgram.selected, s->selected);
-            glUniformMatrix4fv(defaultProgram.model, 1, false, (GLfloat*)&s->modelMatrix);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 36, a->length);
     }
 
     glBindVertexArray(0);
@@ -248,4 +279,5 @@ createTexture(GLuint texture, char const *fileName, GLenum format) {
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
     SDL_Log("Creating texture %d from %s: DONE.\n", texture, fileName);
+    SDL_Log("Texture size: %dx%d", width, height);
 }

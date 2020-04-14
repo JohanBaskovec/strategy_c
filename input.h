@@ -23,7 +23,7 @@ typedef struct Input {
     bool pressedKeys[KEY_NUMBER];
     bool pressedKeysThisFrame[KEY_NUMBER];
     Key keyMapping[SDL_NUM_SCANCODES];
-    Key mouseMapping[3];
+    Key mouseMapping[4];
     Uint32 timeLimit[KEY_NUMBER];
     Uint32 lastPress[KEY_NUMBER];
     int hoveredEntity;

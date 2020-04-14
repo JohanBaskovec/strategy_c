@@ -35,7 +35,7 @@ addWall(int x, int y) {
     int spriteI = graphicsAddSprite(texture, sprite);
     Entity entity = entityCreate(b, texture, spriteI);
     arrayAdd(world.entities, entity);
-    SDL_Log("Add wall, spriteI = %d", spriteI);
+    //SDL_Log("Add wall, spriteI = %d", spriteI);
 }
 
 Entity*
@@ -70,7 +70,7 @@ worldInit() {
             int spriteI = graphicsAddSprite(texture, sprite);
             Entity entity = entityCreate(b, texture, spriteI);
             arrayAdd(world.entities, entity);
-            SDL_Log("Add floor, spriteI = %d, text=%d", spriteI, texture);
+            //SDL_Log("Add floor, spriteI = %d, text=%d", spriteI, texture);
         }
     }
 
@@ -84,27 +84,17 @@ worldInit() {
         enum Texture texture = TEXTURE_DIRT_FLOOR;
         Vec3f p = {1, 1, 1};
         Box3f box = box3fCreate(p, graphics.tileSize);
-        SDL_Log("box of ai: %f", box.min.x);
+        //SDL_Log("box of ai: %f", box.min.x);
         Sprite sprite = spriteCreate(box);
         int spriteI = graphicsAddSprite(texture, sprite);
-        SDL_Log("sprite i: %d", spriteI);
+        //SDL_Log("sprite i: %d", spriteI);
 
         Entity entity = entityCreate(box, texture, spriteI);
         entity.ai = aci;
         world.aiComponents.data[aci].entity = world.entities.length;
         arrayAdd(world.entities, entity);
-        SDL_Log("Add char, spriteI = %d", spriteI);
+        //SDL_Log("Add char, spriteI = %d", spriteI);
     }
-
-    /*
-    addWall(0, 0);
-    addWall(0, 1);
-    addWall(0, 2);
-    addWall(1, 2);
-    addWall(2, 2);
-    addWall(3, 2);
-    addWall(4, 2);
-    */
 }
 
 float
@@ -141,7 +131,7 @@ worldMoveRandom() {
     //int goalY = 3;
 
     Vec3f target = {goalX, goalY, 1};
-    SDL_Log("worldMoveRandom, target=%d:%d", goalX, goalY);
+    //SDL_Log("worldMoveRandom, target=%d:%d", goalX, goalY);
     world.aiComponents.data[0].target = target;
     world.aiComponents.data[0].hasTarget = true;
 }
