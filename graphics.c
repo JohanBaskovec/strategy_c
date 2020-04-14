@@ -183,6 +183,13 @@ graphicsInit() {
     SDL_Log("OpengL: available image units = %d\n",  GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
     SDL_SetRelativeMouseMode(true);
 
+    glViewport(0, 0, screenWidth, screenHeight);
+    glUseProgram(defaultProgram.id);
+    Mat4f projectionMat = mat4fPerspective(fovRadians, screenRatio, ZNEAR, ZFAR);
+    glUniformMatrix4fv(defaultProgram.projection, 1, false, (GLfloat*)&projectionMat);
+    // bind the sampler2d in the shader to the texture GL_TEXTURE0
+    glUniform1i(defaultProgram.diffuse, 0);
+
     SDL_Log("Loading done.");
 }
 
@@ -192,18 +199,9 @@ graphicsRender() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // render normally
-    glViewport(0, 0, screenWidth, screenHeight);
     glUseProgram(defaultProgram.id);
 
-    camera.target = vec3fAdd(camera.position, camera.front);
-    Mat4f viewMat = mat4fLookAt(camera.position, camera.target, camera.up);
-    glUniformMatrix4fv(defaultProgram.view, 1, false, (GLfloat*)&viewMat);
-
-    Mat4f projectionMat = mat4fPerspective(fovRadians, screenRatio, ZNEAR, ZFAR);
-    glUniformMatrix4fv(defaultProgram.projection, 1, false, (GLfloat*)&projectionMat);
-
-    // bind the sampler2d in the shader to the texture GL_TEXTURE0
-    glUniform1i(defaultProgram.diffuse, 0);
+    glUniformMatrix4fv(defaultProgram.view, 1, false, (GLfloat*)&camera.viewMatrix);
 
     glBindVertexArray(defaultVao);
     glActiveTexture(GL_TEXTURE0);
@@ -213,13 +211,9 @@ graphicsRender() {
         SpriteArray *a = &graphics.sprites[i];
         for (int x = 0 ; x < a->length ; x++) {
             Sprite *s = &a->data[x];
-            Mat4f modelMat = mat4fVec3fTranslate(identityMat, s->box.position);
-            modelMat = mat4fScale(modelMat, s->box.size);
-            //Vec3f rot = {1, 0, 0};
-            //modelMat = mat4fVec3fRotate(modelMat, degreesToRadians(45), rot);
 
             glUniform1i(defaultProgram.selected, s->selected);
-            glUniformMatrix4fv(defaultProgram.model, 1, false, (GLfloat*)&modelMat);
+            glUniformMatrix4fv(defaultProgram.model, 1, false, (GLfloat*)&s->modelMatrix);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }

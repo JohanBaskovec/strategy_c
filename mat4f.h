@@ -70,4 +70,5 @@ mat4fInverseTranspose(Mat4f mat);
 
 void
 mat4fPrint(Mat4f *mat);
+
 #endif

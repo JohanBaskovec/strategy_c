@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include "texture_enum.h"
 #include "box3f.h"
+#include "mat4f.h"
 
 typedef struct Entity {
     bool alive;
@@ -24,4 +25,5 @@ typedef struct EntityArray {
     Entity *data;
 } EntityArray;
 
+void entityUpdate(Entity *e);
 #endif

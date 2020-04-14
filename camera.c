@@ -31,6 +31,12 @@ cameraInit() {
 
 
 void
+cameraInitTargetAndViewMatrix() {
+    camera.target = vec3fAdd(camera.position, camera.front);
+    camera.viewMatrix = mat4fLookAt(camera.position, camera.target, camera.up);
+}
+
+void
 updateCameraVector() {
     float yawRad = degreesToRadians(camera.yaw);
     float pitchRad = degreesToRadians(camera.pitch);
@@ -43,4 +49,11 @@ updateCameraVector() {
     camera.right = vec3fNormalize(vec3fCrossProduct(camera.front, worldUp));
 
     camera.up = vec3fNormalize(vec3fCrossProduct(camera.right, camera.front));
+    cameraInitTargetAndViewMatrix();
+}
+
+void
+cameraMove(Vec3f v) {
+    camera.position = vec3fAdd(camera.position, v);
+    cameraInitTargetAndViewMatrix();
 }

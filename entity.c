@@ -2,6 +2,8 @@
 #include "entity.h"
 #include "array.h"
 #include "vec3f.h"
+#include "sprite.h"
+#include "graphics.h"
 
 Entity
 entityCreate(
@@ -20,4 +22,12 @@ entityCreate(
     ret.selected = false;
     ret.texture = texture;
     return ret;
+}
+
+void
+entityUpdate(Entity *e) {
+    e->box = box3fMoveVec3f(e->box, e->velocity);
+
+    Sprite *s = graphicsGetSprite(e->texture, e->spriteIndex);
+    spriteMove(s, e->velocity);
 }

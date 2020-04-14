@@ -121,10 +121,7 @@ void
 worldUpdate() {
     for (int i = 0 ; i < world.entities.length ; i++) {
         Entity *entity = &world.entities.data[i];
-        entity->box = box3fMoveVec3f(entity->box, entity->velocity);
-
-        Sprite *sprite = graphicsGetSprite(entity->texture, entity->spriteIndex);
-        sprite->box = entity->box;
+        entityUpdate(entity);
     }
     aiSystemUpdate();
 }

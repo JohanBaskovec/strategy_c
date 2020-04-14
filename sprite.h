@@ -3,10 +3,12 @@
 #include <stdbool.h>
 #include "box3f.h"
 #include "texture_enum.h"
+#include "mat4f.h"
 
 typedef struct Sprite {
     Box3f box;
     bool selected;
+    Mat4f modelMatrix;
 } Sprite;
 
 Sprite
@@ -16,4 +18,7 @@ typedef struct SpriteArray {
     int allocated;
     Sprite *data;
 } SpriteArray;
+
+void
+spriteMove(Sprite *s, Vec3f v);
 #endif

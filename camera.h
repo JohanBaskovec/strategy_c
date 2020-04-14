@@ -1,6 +1,7 @@
 #ifndef ST_CAMERA
 #define ST_CAMERA
 #include "vec3f.h"
+#include "mat4f.h"
 
 typedef struct Camera {
     Vec3f position;
@@ -12,6 +13,7 @@ typedef struct Camera {
     float roll;
     float pitch;
     float yaw;
+    Mat4f viewMatrix;
 } Camera;
 
 extern Camera camera;
@@ -21,5 +23,8 @@ cameraInit();
 
 void
 updateCameraVector();
+
+void
+cameraMove(Vec3f v);
 
 #endif
