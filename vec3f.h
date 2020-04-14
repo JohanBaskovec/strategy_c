@@ -12,6 +12,8 @@ typedef struct Vec3f {
 
 extern Vec3f vec3fZero;
 
+extern Vec3f vec3fOne;
+
 ARRAY_DECLARE(Vec3f, Vec3fArray);
 
 float

@@ -4,17 +4,17 @@ uniform sampler2D diffuse;
 
 in vec3 FragPos;
 in vec2 TexCoords;
+in vec3 ColorAdd;
+in vec3 ColorMul;
 
 out vec4 FragColor;
 
-uniform bool selected;
 
 void main()
 {
     vec3 result = texture(diffuse, TexCoords).rgb;
-    if (selected) {
-        result.r = 200;
-    }
+    result += ColorAdd;
+    result *= ColorMul;
 
     float gamma = 2.2;
     vec3 color = pow(result, vec3(1.0/gamma));

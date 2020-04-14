@@ -190,11 +190,31 @@ graphicsInit() {
             glEnableVertexAttribArray(defaultProgram.model + i);
             glVertexAttribDivisor(defaultProgram.model + i, 1);
         }
+        glVertexAttribPointer(
+            defaultProgram.colorMul
+            , 3
+            , GL_FLOAT
+            , GL_FALSE
+            , sizeof(Sprite)
+            , (void *) (offsetof(Sprite, colorMul))
+        );
+        glEnableVertexAttribArray(defaultProgram.colorMul);
+        glVertexAttribDivisor(defaultProgram.colorMul, 1);
+
+        glVertexAttribPointer(
+            defaultProgram.colorAdd
+            , 3
+            , GL_FLOAT
+            , GL_FALSE
+            , sizeof(Sprite)
+            , (void *) (offsetof(Sprite, colorAdd))
+        );
+        glEnableVertexAttribArray(defaultProgram.colorAdd);
+        glVertexAttribDivisor(defaultProgram.colorAdd, 1);
+
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
-
-
 
     SDL_Log("Loading textures...");
 
@@ -223,17 +243,6 @@ graphicsInit() {
 bool firstRender = true;
 
 void
-graphicsInitBufferData() {
-    for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
-        glBindVertexArray(defaultVao[i]);
-        glBindTexture(GL_TEXTURE_2D, textures[i]);
-        SpriteArray *a = &graphics.sprites[i];
-        glBindBuffer(GL_ARRAY_BUFFER, instanceVbo[i]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Sprite) * a->length, a->data, GL_STATIC_DRAW);
-    }
-}
-
-void
 graphicsRender() {
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -247,6 +256,8 @@ graphicsRender() {
         glBindVertexArray(defaultVao[i]);
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         SpriteArray *a = &graphics.sprites[i];
+        glBindBuffer(GL_ARRAY_BUFFER, instanceVbo[i]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Sprite) * a->length, a->data, GL_STATIC_DRAW);
         glDrawArraysInstanced(GL_TRIANGLES, 0, 36, a->length);
     }
 

@@ -14,7 +14,8 @@ typedef struct DefaultProgram {
 
     GLint diffuse;
 
-    GLint selected;
+    GLint colorMul;
+    GLint colorAdd;
 } DefaultProgram;
 
 DefaultProgram

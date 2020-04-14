@@ -38,9 +38,6 @@ int main(int argc, char *argv[]) {
     int fps = 0;
     int frameCount = 0;
 
-    bool gi = false;
-
-
     while (true) {
         graphicsRender();
 
@@ -48,11 +45,6 @@ int main(int argc, char *argv[]) {
 
         worldUpdate();
         Uint32 ticks = SDL_GetTicks();
-        if (!gi) {
-            graphicsInitBufferData();
-            gi = true;
-
-        }
         Uint32 ticksSinceLastFrame = ticks - lastFrameTicks;
 
         if (input.pressedKeys[KEY_ESCAPE]) {

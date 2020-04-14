@@ -2,6 +2,7 @@
 #include "vec3f.h"
 
 Vec3f vec3fZero = {0, 0, 0};
+Vec3f vec3fOne = {1, 1, 1};
 
 float
 vec3fLength(Vec3f vec) {

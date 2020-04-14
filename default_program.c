@@ -12,13 +12,14 @@ defaultProgramCreate() {
 
     SET_ATTRIB_LOCATION(aPos);
     SET_ATTRIB_LOCATION(aTexCoords);
-
     SET_ATTRIB_LOCATION(model);
+    SET_ATTRIB_LOCATION(colorMul);
+    SET_ATTRIB_LOCATION(colorAdd);
+
     SET_UNIFORM_LOCATION(projection);
     SET_UNIFORM_LOCATION(view);
 
     SET_UNIFORM_LOCATION(diffuse);
-    SET_UNIFORM_LOCATION(selected);
 
     glUseProgram(0);
     SDL_Log("Default program created.\n");

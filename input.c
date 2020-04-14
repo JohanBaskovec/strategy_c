@@ -142,7 +142,7 @@ findHoveredObject() {
                     if (currentlySelected != NULL) {
                         currentlySelected->selected = false;
                         Sprite *s = graphicsGetEntitySprite(currentlySelected);
-                        s->selected = false;
+                        spriteSetColorAdd(s, vec3fZero);
                     }
 
                     Box3f b = e->box;
@@ -152,8 +152,9 @@ findHoveredObject() {
                     e->selected = true;
 
                     Sprite *s = graphicsGetEntitySprite(e);
+                    Vec3f colorAdd = {0.3, 0.1, 0.3};
+                    spriteSetColorAdd(s, colorAdd);
 
-                    s->selected = true;
                     SDL_Log("ray pos: %f:%f:%f", rayPos.x, rayPos.y, rayPos.z);
                     SDL_Log("Selected %d %f %d %f:%f:%f", e->texture, e->box.min.x, i, s->box.position.x, s->box.position.y, s->box.position.z);
                 }
@@ -167,12 +168,12 @@ findHoveredObject() {
     }
 end:
     if (!intersect) {
-        Entity *selected = getSelectedEntity();
-        if (selected != NULL) {
+        Entity *selectedEntity = getSelectedEntity();
+        if (selectedEntity != NULL) {
             if (input.pressedKeysThisFrame[KEY_SELECT]) {
-                selected->selected = false;
-                Sprite *s = graphicsGetEntitySprite(selected);
-                s->selected = false;
+                selectedEntity->selected = false;
+                Sprite *s = graphicsGetEntitySprite(selectedEntity);
+                spriteSetColorAdd(s, vec3fZero);
                 input.selectedEntity = -1;
             }
         }

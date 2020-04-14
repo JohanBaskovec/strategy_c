@@ -7,8 +7,9 @@
 
 typedef struct Sprite {
     Mat4f modelMatrix;
+    Vec3f colorMul;
+    Vec3f colorAdd;
     Box3f box;
-    bool selected;
 } Sprite;
 
 Sprite
@@ -21,4 +22,13 @@ typedef struct SpriteArray {
 
 void
 spriteMove(Sprite *s, Vec3f v);
+
+void
+spriteMulColor(Sprite *s, float f);
+
+void
+spriteUnmulColor(Sprite *s);
+
+void
+spriteSetColorAdd(Sprite *s, Vec3f v);
 #endif
