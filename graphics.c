@@ -86,7 +86,7 @@ graphicsInit() {
     graphics.screenHeight = 1000;
     // make sure that sprite array starts empty
     for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
-        SpriteArray a = fixedArrayCreate(GRAPHICS_MAX_SPRITES);
+        SpriteArray a = arrayCreate();
         graphics.sprites[i] = a;
     }
     Vec3f tileSize = {1.0, 1.0, 1.0};

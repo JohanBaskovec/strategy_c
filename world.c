@@ -75,17 +75,6 @@ worldInit() {
     world.entities.length = 0;
     world.entities.data = NULL;
 
-    for (int x = 0 ; x < world.width ; x++) {
-        for (int y = 0 ; y < world.height ; y++) {
-            if (rand() % 5 == 0) {
-                addWall(x, y);
-            }
-            Vec3f p = {x, y, 0};
-            createAndAddEntity(p, TEXTURE_WOOD_FLOOR, true);
-        }
-    }
-
-
     {
         enum Texture texture = TEXTURE_DIRT_FLOOR;
         Vec3f p = {1, 1, 1};
@@ -95,6 +84,17 @@ worldInit() {
         Entity *e = worldGetEntity(entityI);
         e->ai = aci;
     }
+    for (int x = 0 ; x < world.width ; x++) {
+        for (int y = 0 ; y < world.height ; y++) {
+            if (x != 1 && y != 1 && rand() % 5 == 0) {
+                addWall(x, y);
+            }
+            Vec3f p = {x, y, 0};
+            createAndAddEntity(p, TEXTURE_WOOD_FLOOR, true);
+        }
+    }
+
+
 }
 
 float

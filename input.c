@@ -150,17 +150,17 @@ inputPollEvents(Uint32 ticks) {
     findHoveredObject();
 
     if (input.pressedKeysThisFrame[KEY_GIVE_MOVE_ORDER]) {
-        Entity *hoveredEntity = &world.entities.data[input.hoveredEntity];
-
         Entity *selectedEntity = &world.entities.data[input.selectedEntity];
 
-        Vec3f target = hoveredEntity->box.position;
-        target.z = 1;
-        SDL_Log("moving selected entity %d to=%f:%f", input.selectedEntity, target.x, target.y);
-
         AiComponent *ai = aiSystemGetEntityAiComponent(selectedEntity);
-        ai->target = target;
-        ai->hasTarget = true;
+        if (ai != NULL) {
+            Entity *hoveredEntity = &world.entities.data[input.hoveredEntity];
+            Vec3f target = hoveredEntity->box.position;
+            target.z = 1;
+            SDL_Log("moving selected entity %d to=%f:%f", input.selectedEntity, target.x, target.y);
+            ai->target = target;
+            ai->hasTarget = true;
+        }
     }
 
     if (input.pressedKeys[KEY_ESCAPE]) {
@@ -230,6 +230,7 @@ findHoveredObject() {
     Entity *closestEntity = NULL;
     int entityI = -1;
 
+    // TODO: move this to main loop to not loop over every entity multiple times
     for (int i = 0 ; i < world.entities.length ; i++) {
         Entity *e = &world.entities.data[i];
         Vec3f diff = vec3fSub(e->box.position, objcoord);
