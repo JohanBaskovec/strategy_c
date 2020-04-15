@@ -12,9 +12,6 @@
 #include "ai_component.h"
 #include "ai_system.h"
 
-int
-aiComponentArrayAdd(AiComponent e);
-
 World world;
 
 Floor dirtFloor;
@@ -33,10 +30,7 @@ worldAddEntity(Entity entity) {
 }
 
 int
-createAndAddEntity(Vec3f position, enum Texture texture) {
-    if (position.z == 1) {
-        worldSetDifficulty(position.x, position.y, 1);
-    }
+createAndAddEntity(Vec3f position, enum Texture texture, bool isWall) {
     Box3f b = box3fCreate(position, graphics.tileSize);
     Sprite sprite = spriteCreate(b);
     int spriteI = graphicsAddSprite(texture, sprite);
@@ -44,13 +38,20 @@ createAndAddEntity(Vec3f position, enum Texture texture) {
     int entityI = worldAddEntity(entity);
     Sprite *s = graphicsGetSprite(texture, spriteI);
     s->entity = entityI;
+    if (isWall) {
+        if (position.z == 1) {
+            worldSetDifficulty(position.x, position.y, 1);
+        }
+        int i = MAP_INDEX(position.x, position.y);
+        world.entityTiles[i] = entityI;
+    }
     return entityI;
 }
 
 void
 addWall(int x, int y) {
     Vec3f p = {x, y, 1};
-    createAndAddEntity(p, TEXTURE_WALL);
+    createAndAddEntity(p, TEXTURE_WALL, true);
 }
 
 Entity*
@@ -61,10 +62,11 @@ worldGetEntity(int i) {
 void
 worldInit() {
     world.end = false;
-    world.width = 20;
-    world.height = 20;
+    world.width = 100;
+    world.height = 100;
     world.tilesN = world.width * world.height;
     world.difficultyMap = malloc(world.tilesN * sizeof(float));
+    world.entityTiles = malloc(world.tilesN * sizeof(int));
     for (int x = 0 ; x < world.width ; x++) {
         for (int y = 0 ; y < world.height ; y++) {
             worldSetDifficulty(x, y, 0.1);
@@ -79,7 +81,7 @@ worldInit() {
                 addWall(x, y);
             }
             Vec3f p = {x, y, 0};
-            createAndAddEntity(p, TEXTURE_WOOD_FLOOR);
+            createAndAddEntity(p, TEXTURE_WOOD_FLOOR, true);
         }
     }
 
@@ -87,13 +89,9 @@ worldInit() {
     {
         enum Texture texture = TEXTURE_DIRT_FLOOR;
         Vec3f p = {1, 1, 1};
-        int entityI = createAndAddEntity(p, texture);
-        AiComponent ac = {
-            .hasTarget = false
-            , .movementSpeed = 0.05
-            , .entity = entityI
-        };
-        int aci = aiComponentArrayAdd(ac);
+        int entityI = createAndAddEntity(p, texture, false);
+        AiComponent ac = aiComponentCreate(entityI);
+        int aci = aiSystemAddAiComponent(ac);
         Entity *e = worldGetEntity(entityI);
         e->ai = aci;
     }
@@ -118,13 +116,6 @@ worldUpdate() {
     aiSystemUpdate();
 }
 
-int
-aiComponentArrayAdd(AiComponent e) {
-    int newIndex = world.aiComponents.length;
-    arrayAdd(world.aiComponents, e);
-    return newIndex;
-}
-
 void
 worldMoveRandom() {
     int goalX = rand() % world.width;
@@ -134,8 +125,8 @@ worldMoveRandom() {
 
     Vec3f target = {goalX, goalY, 1};
     //SDL_Log("worldMoveRandom, target=%d:%d", goalX, goalY);
-    world.aiComponents.data[0].target = target;
-    world.aiComponents.data[0].hasTarget = true;
+    aiSystem.aiComponents.data[0].target = target;
+    aiSystem.aiComponents.data[0].hasTarget = true;
 }
 
 void

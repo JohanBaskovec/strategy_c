@@ -2,6 +2,8 @@
 #include "input.h"
 #include "camera.h"
 #include "world.h"
+#include "ai_system.h"
+#include "ai_component.h"
 
 #define DO_WITH_MINIMUM_DELAY(key_name, func)\
         if (input.pressedKeys[key_name]) {\
@@ -156,7 +158,7 @@ inputPollEvents(Uint32 ticks) {
         target.z = 1;
         SDL_Log("moving selected entity %d to=%f:%f", input.selectedEntity, target.x, target.y);
 
-        AiComponent *ai = &world.aiComponents.data[selectedEntity->ai];
+        AiComponent *ai = aiSystemGetEntityAiComponent(selectedEntity);
         ai->target = target;
         ai->hasTarget = true;
     }

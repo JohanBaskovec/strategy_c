@@ -9,17 +9,40 @@
 
 #define EQUAL_DELTA(a, b, delta) (fabs(a - b) < delta)
 
+AiComponent
+aiComponentCreate(int entityI) {
+    AiComponent ai = {
+        .hasTarget = false
+        , .movementSpeed = 0.05
+        , .entity = entityI
+        , .pathFinding = pathFindingCreate(world.tilesN)
+    };
+    return ai;
+}
+
 void
 aiComponentFree(AiComponent *ai) {
     arrayFree(ai->path);
+    pathFindingFree(&ai->pathFinding);
 }
 
 void
 aiUpdate(AiComponent *ai) {
     Entity *entity = &world.entities.data[ai->entity];
     if (ai->hasTarget) {
+        for (int i = 0 ; i < world.tilesN ; i++) {
+            //float gScore =  a->pathFinding.gScores[i];
+            float fScore =  ai->pathFinding.fScores[i];
+            if (fScore != -1) {
+                int tileI = world.entityTiles[i];
+                Entity *tile = worldGetEntity(tileI);
+                Sprite *tileSprite = graphicsGetEntitySprite(tile);
+                spriteSetColorAdd(tileSprite, vec3fZero);
+            }
+        }
+
         Vec3fArray path = pathFindingFindPath(
-                &aiSystem.pathFinding
+                &ai->pathFinding
                 , entity->box.position
                 , ai->target
         );
@@ -50,6 +73,46 @@ aiUpdate(AiComponent *ai) {
         entity->velocity = vec3fSub(target, pos);
         entity->velocity = vec3fNormalize(entity->velocity);
         entity->velocity = vec3fMulf(entity->velocity, ai->movementSpeed);
+
+        float maxFScore = 0;
+        float maxGScore = 0;
+        for (int i = 0 ; i < world.tilesN ; i++) {
+            float fScore =  ai->pathFinding.fScores[i];
+            float gScore =  ai->pathFinding.gScores[i];
+            if (fScore != -1) {
+                if (fScore > maxFScore) {
+                    maxFScore = fScore;
+                }
+            }
+            if (gScore != -1) {
+                if (gScore > maxGScore) {
+                    maxGScore = gScore;
+                }
+            }
+        }
+        for (int i = 0 ; i < world.tilesN ; i++) {
+            float fScore =  ai->pathFinding.fScores[i];
+            float gScore =  ai->pathFinding.gScores[i];
+            /*
+            if (fScore != -1) {
+                int tileI = world.entityTiles[i];
+                Entity *tile = worldGetEntity(tileI);
+                Sprite *tileSprite = graphicsGetEntitySprite(tile);
+
+                Vec3f colorAdd = {fScore / maxFScore, 0, 0};
+                spriteSetColorAdd(tileSprite, colorAdd);
+            }
+            */
+            if (gScore != -1) {
+                int tileI = world.entityTiles[i];
+                Entity *tile = worldGetEntity(tileI);
+                Sprite *tileSprite = graphicsGetEntitySprite(tile);
+
+                Vec3f colorAdd = {gScore / maxGScore, 0, 0};
+                spriteSetColorAdd(tileSprite, colorAdd);
+            }
+        }
+
     }
 
     if (ai->isMoving) {

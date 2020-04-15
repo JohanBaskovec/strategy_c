@@ -28,7 +28,7 @@ cameraInit() {
     camera.up.y = 1.0;
     camera.up.z = 0.0;
 
-    camera.movementSpeed = 0.3;
+    camera.movementSpeed = 0.5;
     updateCameraVector();
 }
 

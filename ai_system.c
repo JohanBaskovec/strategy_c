@@ -7,29 +7,35 @@ AiSystem aiSystem;
 
 void
 aiSystemInit() {
-    aiSystem.pathFinding = pathFindingCreate(world.tilesN);
 }
 
 void
 aiSystemFree() {
-    pathFindingFree(&aiSystem.pathFinding);
-    for (int i = 0 ; i < world.aiComponents.length ; i++) {
-        aiComponentFree(&world.aiComponents.data[i]);
+    for (int i = 0 ; i < aiSystem.aiComponents.length ; i++) {
+        aiComponentFree(&aiSystem.aiComponents.data[i]);
     }
-    arrayFree(world.aiComponents);
+    arrayFree(aiSystem.aiComponents);
 }
 
 void
 aiSystemUpdate() {
-    //TODO: move ai components to a AI system struct
-    for (int i = 0 ; i < world.aiComponents.length ; i++) {
-        AiComponent *e = &world.aiComponents.data[i];
+    for (int i = 0 ; i < aiSystem.aiComponents.length ; i++) {
+        AiComponent *e = &aiSystem.aiComponents.data[i];
         aiUpdate(e);
     }
-
 }
 
-Vec3fArray
-aiSystemFindPath(Vec3f start, Vec3f goal) {
-    return pathFindingFindPath(&aiSystem.pathFinding, start, goal);
+int
+aiSystemAddAiComponent(AiComponent e) {
+    int newIndex = aiSystem.aiComponents.length;
+    arrayAdd(aiSystem.aiComponents, e);
+    return newIndex;
+}
+
+AiComponent*
+aiSystemGetEntityAiComponent(Entity *e) {
+    if (e->ai == -1) {
+        return NULL;
+    }
+    return &aiSystem.aiComponents.data[e->ai];
 }

@@ -4,8 +4,6 @@
 #include "world.h"
 #include "array.h"
 
-#define MAP_INDEX(x, y) ((int)x * world.height + (int)y)
-
 PathFindingNode
 pathFindingNodeCreate(Vec3f position) {
     PathFindingNode node = {

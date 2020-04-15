@@ -13,11 +13,12 @@
 typedef struct World {
     int width;
     int height;
+    int depth;
     int tilesN;
     float *difficultyMap;
     EntityArray entities;
-    AiComponentArray aiComponents;
     bool end;
+    int *entityTiles;
 } World;
 
 extern World world;
@@ -42,4 +43,6 @@ worldGetEntity(int i);
 
 void
 worldFree();
+
+#define MAP_INDEX(x, y) ((int)x * world.height + (int)y)
 #endif

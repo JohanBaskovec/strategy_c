@@ -2,9 +2,11 @@
 #define ST_AI_SYSTEM_H
 #include "path_finding.h"
 #include "vec3f.h"
+#include "ai_component.h"
+#include "entity.h"
 
 typedef struct AiSystem {
-    PathFinding pathFinding;
+    AiComponentArray aiComponents;
 } AiSystem;
 
 Vec3fArray
@@ -20,4 +22,10 @@ aiSystemUpdate();
 
 void
 aiSystemFree();
+
+int
+aiSystemAddAiComponent(AiComponent e);
+
+AiComponent*
+aiSystemGetEntityAiComponent(Entity *e);
 #endif
