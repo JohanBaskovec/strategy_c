@@ -13,9 +13,10 @@ AiComponent
 aiComponentCreate(int entityI) {
     AiComponent ai = {
         .hasTarget = false
-        , .movementSpeed = 0.05
+        , .movementSpeed = 0.5
         , .entity = entityI
         , .pathFinding = pathFindingCreate(world.tilesN)
+        , .jobPriorities = {1.0}
     };
     return ai;
 }
@@ -119,11 +120,7 @@ aiUpdate(AiComponent *ai) {
         #ifdef ST_PATHFINDING_LOG
         SDL_Log("Moving, pathIndex=%d", ai->pathIndex);
         #endif
-        if (ai->pathIndex == -1) {
-            ai->isMoving = false;
-            entity->velocity = vec3fZero;
-            SDL_Log("Final position: %f:%f", entity->box.position.x, entity->box.position.y);
-        } else {
+        if (ai->pathIndex != -1) {
             Vec3f pos = entity->box.position;
             Vec3f target = ai->path.data[ai->pathIndex];
             #ifdef ST_PATHFINDING_LOG
@@ -131,32 +128,33 @@ aiUpdate(AiComponent *ai) {
             SDL_Log("Moving to next target:: %f %f", target.x, target.y);
             #endif
 
-            float diffX = pos.x - target.x;
-            float absDiffX = fabs(diffX);
+            Vec3f diff = vec3fSub(pos, target);
+            float absDiffX = fabs(diff.x);
             bool sameX = absDiffX < 0.001;
 
-            float diffY = pos.y - target.y;
-            float absDiffY = fabs(diffY);
+            float absDiffY = fabs(diff.y);
             bool sameY = absDiffY < 0.001;
-            // if the current position is "close enough" (to take floating
-            // point error into account), we move to the next node
             if (sameX && sameY) {
                 ai->pathIndex--;
 
-                target = ai->path.data[ai->pathIndex];
-                entity->velocity = vec3fSub(target, pos);
-                entity->velocity = vec3fNormalize(entity->velocity);
-                entity->velocity = vec3fMulf(entity->velocity, ai->movementSpeed);
+                if (ai->pathIndex != -1) {
+                    target = ai->path.data[ai->pathIndex];
+                    entity->velocity = vec3fSub(target, pos);
+                    entity->velocity = vec3fNormalize(entity->velocity);
+                    entity->velocity = vec3fMulf(entity->velocity, ai->movementSpeed);
+                } else {
+                    ai->isMoving = false;
+                    entity->velocity = vec3fZero;
+                }
             } else {
-                bool almostSameX = absDiffX < ai->movementSpeed;
-                bool almostSameY = absDiffY < ai->movementSpeed;
+                float length = vec3fLength(diff);
 
                 // if the distance from the target is less than the movement speed,
                 // set the velocity to the distance (so that the end position is
                 // exactly the target)
-                if (almostSameY && almostSameX) {
-                    entity->velocity.y = -diffY;
-                    entity->velocity.x = -diffX;
+                if (length <= ai->movementSpeed) {
+                    entity->velocity.y = -diff.y;
+                    entity->velocity.x = -diff.x;
                 }
             }
 

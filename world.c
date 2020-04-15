@@ -11,6 +11,7 @@
 #include "error.h"
 #include "ai_component.h"
 #include "ai_system.h"
+#include "object_type.h"
 
 World world;
 
@@ -30,7 +31,12 @@ worldAddEntity(Entity entity) {
 }
 
 int
-createAndAddEntity(Vec3f position, enum Texture texture, bool isWall) {
+createAndAddEntity(
+        Vec3f position
+        , enum Texture texture
+        , bool isWall
+        , ObjectType type
+) {
     Box3f b = box3fCreate(position, graphics.tileSize);
     Sprite sprite = spriteCreate(b);
     int spriteI = graphicsAddSprite(texture, sprite);
@@ -51,7 +57,13 @@ createAndAddEntity(Vec3f position, enum Texture texture, bool isWall) {
 void
 addWall(int x, int y) {
     Vec3f p = {x, y, 1};
-    createAndAddEntity(p, TEXTURE_WALL, true);
+    createAndAddEntity(p, TEXTURE_WALL, true, OBJECT_WALL);
+}
+
+void
+addTree(int x, int y) {
+    Vec3f p = {x, y, 1};
+    createAndAddEntity(p, TEXTURE_TREE, true, OBJECT_TREE);
 }
 
 Entity*
@@ -76,9 +88,9 @@ worldInit() {
     world.entities.data = NULL;
 
     {
-        enum Texture texture = TEXTURE_DIRT_FLOOR;
+        enum Texture texture = TEXTURE_HUMAN;
         Vec3f p = {1, 1, 1};
-        int entityI = createAndAddEntity(p, texture, false);
+        int entityI = createAndAddEntity(p, texture, false, OBJECT_HUMAN);
         AiComponent ac = aiComponentCreate(entityI);
         int aci = aiSystemAddAiComponent(ac);
         Entity *e = worldGetEntity(entityI);
@@ -86,11 +98,15 @@ worldInit() {
     }
     for (int x = 0 ; x < world.width ; x++) {
         for (int y = 0 ; y < world.height ; y++) {
-            if (x != 1 && y != 1 && rand() % 5 == 0) {
-                addWall(x, y);
+            if (x != 1 && y != 1) {
+                if (rand() % 5 == 0) {
+                    addWall(x, y);
+                } else if (rand() % 5 == 0) {
+                    addTree(x, y);
+                }
             }
             Vec3f p = {x, y, 0};
-            createAndAddEntity(p, TEXTURE_WOOD_FLOOR, true);
+            createAndAddEntity(p, TEXTURE_DIRT_BLOCK, true, OBJECT_DIRT_BLOCK);
         }
     }
 

@@ -2,9 +2,10 @@
 #define ST_TEXTURE_ENUM_H
 
 enum Texture {
-    TEXTURE_DIRT_FLOOR
-    , TEXTURE_WOOD_FLOOR
+    TEXTURE_DIRT_BLOCK
+    , TEXTURE_HUMAN
     , TEXTURE_WALL
+    , TEXTURE_TREE
     , TEXTURE_NUMBER
 } Texture;
 

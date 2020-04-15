@@ -10,6 +10,7 @@ entityCreate(
         Box3f box
         , enum Texture texture
         , int spriteIndex
+        , ObjectType type
 ) {
     Entity ret;
     ret.velocity = vec3fZero;
@@ -21,6 +22,7 @@ entityCreate(
     ret.hovered = false;
     ret.selected = false;
     ret.texture = texture;
+    ret.type = type;
     return ret;
 }
 

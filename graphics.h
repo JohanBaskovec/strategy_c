@@ -14,7 +14,7 @@
 
 typedef struct TextureConfig {
     char const *name;
-    GLenum format;
+    GLenum  format;
 } TextureConfig;
 
 typedef struct Graphics {

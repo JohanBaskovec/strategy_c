@@ -18,7 +18,7 @@ cameraInit() {
 
     camera.position.x = 0.0;
     camera.position.y = 0.0;
-    camera.position.z = 3.0;
+    camera.position.z = 15.0;
 
     camera.front.x = 0.0;
     camera.front.y = 0.0;

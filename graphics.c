@@ -30,20 +30,7 @@ Mat4f identityMat;
 SDL_Window *window;
 SDL_GLContext glContext;
 GLuint textures[TEXTURE_NUMBER];
-TextureConfig textureConfigs[TEXTURE_NUMBER] = {
-    {
-        .name = "paddle.png",
-        .format = GL_RGBA
-    }
-    ,{
-        .name = "wood00_256.jpg",
-        .format = GL_RGB
-    }
-    ,{
-        .name = "wall_256.png",
-        .format = GL_RGBA
-    }
-};
+TextureConfig textureConfigs[TEXTURE_NUMBER];
 
 Graphics graphics;
 
@@ -89,6 +76,18 @@ graphicsInit() {
         SpriteArray a = arrayCreate();
         graphics.sprites[i] = a;
     }
+
+    textureConfigs[TEXTURE_HUMAN].name = "human.png";
+    textureConfigs[TEXTURE_HUMAN].format = GL_RGBA;
+
+    textureConfigs[TEXTURE_DIRT_BLOCK].name = "dirt_block_256.png";
+    textureConfigs[TEXTURE_DIRT_BLOCK].format = GL_RGB;
+
+    textureConfigs[TEXTURE_WALL].name = "wall_256.png";
+    textureConfigs[TEXTURE_WALL].format = GL_RGBA;
+
+    textureConfigs[TEXTURE_TREE].name = "tree_256.png";
+    textureConfigs[TEXTURE_TREE].format = GL_RGB;
     Vec3f tileSize = {1.0, 1.0, 1.0};
     graphics.tileSize = tileSize;
     identityMat = mat4fIdentity();
@@ -273,7 +272,7 @@ graphicsFree() {
 }
 
 void
-createTexture(GLuint texture, char const *fileName, GLenum format) {
+createTexture(GLuint texture, char const *fileName, GLuint format) {
     SDL_Log("Creating texture %d from %s...\n", texture, fileName);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

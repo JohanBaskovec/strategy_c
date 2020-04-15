@@ -4,6 +4,7 @@
 #include "texture_enum.h"
 #include "box3f.h"
 #include "mat4f.h"
+#include "object_type.h"
 
 typedef struct Entity {
     bool alive;
@@ -14,6 +15,7 @@ typedef struct Entity {
     Vec3f velocity;
     bool hovered;
     bool selected;
+    ObjectType type;
 } Entity;
 
 Entity
