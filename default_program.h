@@ -7,6 +7,7 @@ typedef struct DefaultProgram {
 
     GLint aPos;
     GLint aTexCoords;
+    GLint keep;
 
     GLint model;
     GLint view;

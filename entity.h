@@ -17,6 +17,7 @@ typedef struct Entity {
     bool selected;
     ObjectType type;
     float movementDifficulty;
+    bool keep;
     bool gridAligned;
     bool isTemp;
 } Entity;

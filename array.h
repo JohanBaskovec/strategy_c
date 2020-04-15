@@ -24,7 +24,6 @@ voidArrayAdd(Array *a, size_t sizeOfElement) {
         a->length++;
         return 0;
     }
-    // replace dead entity
     if (a->length < a->allocated) {
         int newIndex = a->length;
         a->length++;
@@ -113,4 +112,34 @@ fixedVoidArrayRemove(Array *a, int i, size_t sizeOfElement) {
         type *data;\
     } name;
 
+typedef struct VoidFixedArray {
+    int maxIndex;
+    void *data[100];
+} VoidFixedArray;
+
+#define fixedArrayAdd(arr, elementToAdd, size, i) \
+    do {\
+        bool found = false;\
+        for (i = 0 ; i < size ; i++) {\
+            if (!(arr)->data[i].keep) {\
+                (arr)->data[i] = elementToAdd;\
+                (arr)->data[i].keep = true;\
+                if ((arr)->length < i+1) {\
+                    (arr)->length = i+1;\
+                }\
+                found = true;\
+                break;\
+            }\
+        }\
+        if (!found) {\
+            printf("Error: array is full.\n");\
+            exit(1);\
+        }\
+    } while (0);
+
+#define fixedArrayRemove(a, index) \
+    {\
+        printf("deleting\n");\
+        (a)->data[index].keep = false;\
+    }
 #endif

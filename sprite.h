@@ -11,6 +11,7 @@ typedef struct Sprite {
     Vec3f colorAdd;
     Box3f box;
     int entity;
+    int keep;
 } Sprite;
 
 Sprite

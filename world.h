@@ -10,13 +10,19 @@
 #include "entity.h"
 #include "ai_component.h"
 
+#define ENTITY_MAX_NUMBER 100000
+typedef struct EntityFixedArray {
+    int length;
+    Entity data[ENTITY_MAX_NUMBER];
+} EntityFixedArray;
+
 typedef struct World {
     int width;
     int height;
     int widthTimesHeight;
     int depth;
     int tilesN;
-    EntityArray entities;
+    EntityFixedArray entities;
     bool end;
     int *entityTiles;
 } World;

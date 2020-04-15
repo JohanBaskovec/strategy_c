@@ -1,9 +1,10 @@
 #version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aTexCoords;
-layout (location = 3) in vec3 colorMul;
-layout (location = 4) in vec3 colorAdd;
-layout (location = 5) in mat4 model;
+in vec3 aPos;
+in vec2 aTexCoords;
+in vec3 colorMul;
+in vec3 colorAdd;
+in mat4 model;
+in int keep;
 
 out vec3 FragPos;
 out vec2 TexCoords;
@@ -22,4 +23,7 @@ void main()
     ColorMul = colorMul;
     ColorAdd = colorAdd;
     gl_Position = projection * view * vec4(FragPos, 1.0);
+    if (keep == 0) {
+        gl_Position.x += 100;
+    }
 }

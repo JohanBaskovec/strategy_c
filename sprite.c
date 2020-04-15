@@ -10,6 +10,7 @@ spriteCreate(Box3f box) {
     s.entity = -1;
     s.modelMatrix = mat4fVec3fTranslate(mat4fIdentity(), s.box.position);
     s.modelMatrix = mat4fScale(s.modelMatrix, s.box.size);
+    s.keep = true;
     return s;
 }
 

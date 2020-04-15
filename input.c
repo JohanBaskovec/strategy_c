@@ -76,9 +76,12 @@ inputInit() {
 
     input.keyMapping[INPUT_MODE_ALL][SDL_SCANCODE_1] = KEY_SELECT_DELETE_BLOCK;
     input.keyMapping[INPUT_MODE_ALL][SDL_SCANCODE_2] = KEY_SELECT_DIRT;
+    input.keyMapping[INPUT_MODE_ALL][SDL_SCANCODE_3] = KEY_SELECT_NONE;
 
     input.mouseMapping[1] = KEY_SELECT;
+    input.timeLimit[KEY_SELECT] = 500;
     input.mouseMapping[3] = KEY_GIVE_MOVE_ORDER;
+    input.timeLimit[KEY_GIVE_MOVE_ORDER] = 500;
 
     input.mouseWheelMapping[INPUT_MODE_RTS][MOUSE_WHEEL_UP] = KEY_CAMERA_MOVE_FRONT;
     input.mouseWheelMapping[INPUT_MODE_RTS][MOUSE_WHEEL_DOWN] = KEY_CAMERA_MOVE_BACK;
@@ -133,6 +136,18 @@ void
 creationModeSetObject(ObjectType t) {
     SDL_Log("Creation mode: %d", t);
     input.object = t;
+}
+
+void
+pressSelectButton() {
+    if (input.object == OBJECT_EMPTINESS) {
+        worldRemoveEntity(input.hoveredEntity);
+        input.hoveredEntity = -1;
+    } else if(input.object != OBJECT_NONE) {
+        Entity *tempEntity = worldGetEntity(input.tempObj);
+        tempEntity->isTemp = false;
+        input.tempObj = -1;
+    }
 }
 void
 inputPollEvents(Uint32 ticks) {
@@ -212,12 +227,15 @@ inputPollEvents(Uint32 ticks) {
 
     DO_WITH_MINIMUM_DELAY(KEY_SWITCH_CAMERA_MODE, switchInputMode)
 
+    DO_WITH_MINIMUM_DELAY(KEY_SELECT, pressSelectButton)
     if (input.pressedKeys[KEY_SELECT_DIRT]) {
         creationModeSetObject(OBJECT_WALL);
-    }
-    if (input.pressedKeys[KEY_SELECT_DELETE_BLOCK]) {
+    } else if (input.pressedKeys[KEY_SELECT_NONE]) {
+        creationModeSetObject(OBJECT_NONE);
+    } else if (input.pressedKeys[KEY_SELECT_DELETE_BLOCK]) {
         creationModeSetObject(OBJECT_EMPTINESS);
     }
+
 }
 
 
@@ -335,7 +353,8 @@ findHoveredObject() {
         #ifdef LOG_HOVER
         SDL_Log("Hover %d", entityI);
         #endif
-        if (input.pressedKeysThisFrame[KEY_SELECT]) {
+        if (input.pressedKeysThisFrame[KEY_SELECT]
+                && input.object == OBJECT_NONE) {
             Entity *currentlySelected = getSelectedEntity();
             if (currentlySelected != NULL) {
                 currentlySelected->selected = false;

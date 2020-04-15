@@ -39,8 +39,8 @@ createTexture(GLuint texture, char const *fileName, GLenum format);
 
 int
 graphicsAddSprite(enum Texture texture, Sprite sprite) {
-    int i = graphics.sprites[texture].length;
-    arrayAdd(&graphics.sprites[texture], sprite);
+    int i;
+    fixedArrayAdd(&graphics.sprites[texture], sprite, SPRITE_MAX_NUMBER, i);
     SDL_Log("Adding sprite: %d %f:%f:%f", texture, sprite.box.position.x, sprite.box.position.y, sprite.box.position.z);
     return i;
 }
@@ -52,7 +52,7 @@ graphicsGetSprite(enum Texture texture, int i) {
 
 void
 graphicsDeleteSprite(enum Texture texture, int index) {
-    arrayRemove(&graphics.sprites[texture], index);
+    fixedArrayRemove(&graphics.sprites[texture], index);
 }
 
 Sprite*
@@ -78,10 +78,11 @@ graphicsInit() {
     graphics.screenWidth = 1200;
     graphics.screenHeight = 1000;
     // make sure that sprite array starts empty
+    /*
     for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
-        SpriteArray a = arrayCreate();
-        graphics.sprites[i] = a;
+        graphics.sprites[i];
     }
+    */
 
     textureConfigs[TEXTURE_HUMAN].name = "human.png";
     textureConfigs[TEXTURE_HUMAN].format = GL_RGBA;
@@ -217,6 +218,17 @@ graphicsInit() {
         glEnableVertexAttribArray(defaultProgram.colorAdd);
         glVertexAttribDivisor(defaultProgram.colorAdd, 1);
 
+        glVertexAttribPointer(
+            defaultProgram.keep
+            , 1
+            , GL_INT
+            , GL_FALSE
+            , sizeof(Sprite)
+            , (void *) (offsetof(Sprite, keep))
+        );
+        glEnableVertexAttribArray(defaultProgram.keep);
+        glVertexAttribDivisor(defaultProgram.keep, 1);
+
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
@@ -259,7 +271,7 @@ graphicsRender() {
     for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
         glBindVertexArray(defaultVao[i]);
         glBindTexture(GL_TEXTURE_2D, textures[i]);
-        SpriteArray *a = &graphics.sprites[i];
+        SpriteFixedArray *a = &graphics.sprites[i];
         glBindBuffer(GL_ARRAY_BUFFER, instanceVbo[i]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Sprite) * a->length, a->data, GL_STATIC_DRAW);
         glDrawArraysInstanced(GL_TRIANGLES, 0, 36, a->length);

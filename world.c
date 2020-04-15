@@ -22,8 +22,8 @@ ObjectConfig objectConfigs[OBJECT_NUMBER];
 
 int
 worldAddEntity(Entity entity) {
-    int i = world.entities.length;
-    arrayAdd(&world.entities, entity);
+    int i;
+    fixedArrayAdd(&world.entities, entity, ENTITY_MAX_NUMBER, i);
     return i;
 }
 
@@ -88,7 +88,7 @@ worldRemoveEntity(int index) {
         int mapI = MAP_INDEXV(e->box.position);
         world.entityTiles[mapI] = -1;
     }
-    arrayRemove(&world.entities, index);
+    fixedArrayRemove(&world.entities, index);
 }
 
 void
@@ -114,11 +114,7 @@ worldInit() {
     objectConfigs[OBJECT_WALL].texture = TEXTURE_WALL;
     objectConfigs[OBJECT_WALL].isGridAligned = true;
 
-    EntityArray entityArray = arrayCreate();
-    world.entities = entityArray;
-
     {
-        enum Texture texture = TEXTURE_HUMAN;
         Vec3f p = {1, 1, 0};
         int entityI = worldCreateAndAddEntity(p, OBJECT_HUMAN);
         AiComponent ac = aiComponentCreate(entityI);
@@ -145,6 +141,8 @@ worldInit() {
             }
         }
     }
+    SDL_Log("Entity memory = %ldb", ENTITY_MAX_NUMBER * sizeof(Entity));
+    SDL_Log("Sprites memory = %ldb", SPRITE_MAX_NUMBER * TEXTURE_NUMBER * sizeof(Sprite));
 }
 
 float
@@ -162,7 +160,9 @@ void
 worldUpdate() {
     for (int i = 0 ; i < world.entities.length ; i++) {
         Entity *entity = &world.entities.data[i];
-        entityUpdate(entity);
+        if (entity->keep) {
+            entityUpdate(entity);
+        }
     }
     aiSystemUpdate();
 }
@@ -182,5 +182,4 @@ worldMoveRandom() {
 
 void
 worldFree() {
-    arrayFree(world.entities);
 }

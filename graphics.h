@@ -17,9 +17,17 @@ typedef struct TextureConfig {
     GLenum  format;
 } TextureConfig;
 
+
+#define SPRITE_MAX_NUMBER 30000
+
+typedef struct SpriteFixedArray {
+    int length;
+    Sprite data[SPRITE_MAX_NUMBER];
+} SpriteFixedArray;
+
 typedef struct Graphics {
     Vec3f tileSize;
-    SpriteArray sprites[TEXTURE_NUMBER];
+    SpriteFixedArray sprites[TEXTURE_NUMBER];
     int screenWidth;
     int screenHeight;
     Mat4f projectionMatrix;

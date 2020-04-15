@@ -27,6 +27,7 @@ entityCreate(
     ret.movementDifficulty = 1.0;
     ret.gridAligned = gridAligned;
     ret.isTemp = false;
+    ret.keep = true;
     return ret;
 }
 

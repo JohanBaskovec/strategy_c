@@ -22,6 +22,7 @@ typedef enum Key {
     , KEY_SWITCH_CAMERA_MODE
     , KEY_SELECT_DELETE_BLOCK
     , KEY_SELECT_DIRT
+    , KEY_SELECT_NONE
 
     , KEY_SELECT
     , KEY_NUMBER
