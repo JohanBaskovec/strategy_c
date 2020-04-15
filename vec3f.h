@@ -46,4 +46,7 @@ vec3fSubf(Vec3f vec, float f);
 bool
 vec3fEqual(Vec3f a, Vec3f b);
 
+void
+vec3fPrint(Vec3f v);
+
 #endif

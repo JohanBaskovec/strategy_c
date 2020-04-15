@@ -17,10 +17,18 @@ typedef struct Entity {
     bool selected;
     ObjectType type;
     float movementDifficulty;
+    bool gridAligned;
+    bool isTemp;
 } Entity;
 
 Entity
-entityCreate();
+entityCreate(
+        Box3f box
+        , enum Texture texture
+        , int spriteIndex
+        , ObjectType type
+        , bool gridAligned
+);
 
 typedef struct EntityArray {
     int length;

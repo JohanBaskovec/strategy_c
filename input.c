@@ -4,6 +4,8 @@
 #include "world.h"
 #include "ai_system.h"
 #include "ai_component.h"
+#include "object_type.h"
+#include <math.h>
 
 #define DO_WITH_MINIMUM_DELAY(key_name, func)\
         if (input.pressedKeys[key_name]) {\
@@ -43,6 +45,9 @@ switchInputMode() {
 
 void
 inputInit() {
+    input.tempObj = -1;
+    input.creationModeEnabled = true;
+    input.object = OBJECT_NONE;
     input.mode = INPUT_MODE_RTS;
     input.hoveredEntity = -1;
     input.selectedEntity = -1;
@@ -68,6 +73,9 @@ inputInit() {
 
     input.keyMapping[INPUT_MODE_ALL][SDL_SCANCODE_C] = KEY_SWITCH_CAMERA_MODE;
     input.timeLimit[KEY_SWITCH_CAMERA_MODE] = 500;
+
+    input.keyMapping[INPUT_MODE_ALL][SDL_SCANCODE_1] = KEY_SELECT_DELETE_BLOCK;
+    input.keyMapping[INPUT_MODE_ALL][SDL_SCANCODE_2] = KEY_SELECT_DIRT;
 
     input.mouseMapping[1] = KEY_SELECT;
     input.mouseMapping[3] = KEY_GIVE_MOVE_ORDER;
@@ -121,6 +129,11 @@ noMouseWheel() {
     }
 }
 
+void
+creationModeSetObject(ObjectType t) {
+    SDL_Log("Creation mode: %d", t);
+    input.object = t;
+}
 void
 inputPollEvents(Uint32 ticks) {
     for (int i = 0 ; i < KEY_NUMBER ; i++) {
@@ -198,6 +211,13 @@ inputPollEvents(Uint32 ticks) {
     DO_WITH_MINIMUM_DELAY(KEY_MOVE_TO_RANDOM_LOCATION, worldMoveRandom);
 
     DO_WITH_MINIMUM_DELAY(KEY_SWITCH_CAMERA_MODE, switchInputMode)
+
+    if (input.pressedKeys[KEY_SELECT_DIRT]) {
+        creationModeSetObject(OBJECT_WALL);
+    }
+    if (input.pressedKeys[KEY_SELECT_DELETE_BLOCK]) {
+        creationModeSetObject(OBJECT_EMPTINESS);
+    }
 }
 
 
@@ -218,6 +238,53 @@ getSelectedEntity() {
 }
 
 void
+hoverEntity(Entity *e) {
+    if (input.creationModeEnabled
+            && input.object != OBJECT_NONE
+            && input.object != OBJECT_EMPTINESS) {
+        Sprite *s = graphicsGetEntitySprite(e);
+        // find closest empty space to place temporary object
+        float shortestDist = 1000;
+        Vec3f closestPos;
+        bool found = false;
+        Vec3f p = s->box.position;
+        Vec3f min;
+        min.x = fmin(0, p.x - 1.1);
+        min.y = fmin(0, p.y - 1.1);
+        min.z = fmin(0, p.z + 1.1);
+
+        Vec3f max;
+        max.x = fmax(world.width, p.x + 1.1);
+        max.y = fmax(world.height, p.y + 1.1);
+        max.z = fmax(-world.depth, p.z - 1.1);
+        for (int z = min.z ; z > max.z ; z--) {
+            for (int x = min.x ; x < max.x ; x++) {
+                for (int y = min.y ; y < max.y ; y++) {
+                    Vec3f v = {x, y, z};
+                    Vec3f diff = vec3fSub(v, p);
+                    float dist = vec3fLength(diff);
+                    if (dist < shortestDist) {
+                        Entity *e = worldGetTileAlignedEntity(v);
+                        if (e == NULL) {
+                            shortestDist = dist;
+                            closestPos = v;
+                            found = true;
+                        }
+                    }
+                }
+            }
+        }
+        if (found) {
+            if (input.tempObj != -1) {
+                worldRemoveEntity(input.tempObj);
+            }
+            input.tempObj = worldCreateAndAddEntity(closestPos , input.object);
+            Entity *e = worldGetEntity(input.tempObj);
+            e->isTemp = true;
+        }
+    }
+}
+void
 findHoveredObject() {
     GLbyte color[4];
     GLfloat depth;
@@ -232,8 +299,6 @@ findHoveredObject() {
     Vec3f wincoord = {input.mouseX, graphics.screenHeight - input.mouseY, depth};
     Vec3f objcoord = mat4fUnproject(wincoord, camera.viewMatrix, graphics.projectionMatrix, viewport);
 
-    // objcoord is right at the surface of the object, push it a liiittllee
-    objcoord = vec3fAdd(objcoord, vec3fDivf(camera.front, 100.0));
     #ifdef LOG_HOVER
     printf("On pixel %d, %d, color %02hhx%02hhx%02hhx%02hhx, depth %f, stencil index %u\n",
          input.mouseX, input.mouseY, color[0], color[1], color[2], color[3], depth, index);
@@ -256,8 +321,16 @@ findHoveredObject() {
             entityI = i;
         }
     }
+
     if (closestEntity != NULL) {
-        input.hoveredEntity = entityI;
+        if (entityI != input.hoveredEntity) {
+            Entity *e = worldGetEntity(entityI);
+            if (!e->isTemp) {
+                input.hoveredEntity = entityI;
+                hoverEntity(e);
+            }
+        }
+
         closestEntity->hovered = true;
         #ifdef LOG_HOVER
         SDL_Log("Hover %d", entityI);

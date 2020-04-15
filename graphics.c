@@ -41,12 +41,18 @@ int
 graphicsAddSprite(enum Texture texture, Sprite sprite) {
     int i = graphics.sprites[texture].length;
     arrayAdd(&graphics.sprites[texture], sprite);
+    SDL_Log("Adding sprite: %d %f:%f:%f", texture, sprite.box.position.x, sprite.box.position.y, sprite.box.position.z);
     return i;
 }
 
 Sprite*
 graphicsGetSprite(enum Texture texture, int i) {
     return &graphics.sprites[texture].data[i];
+}
+
+void
+graphicsDeleteSprite(enum Texture texture, int index) {
+    arrayRemove(&graphics.sprites[texture], index);
 }
 
 Sprite*

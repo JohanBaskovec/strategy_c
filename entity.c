@@ -11,6 +11,7 @@ entityCreate(
         , enum Texture texture
         , int spriteIndex
         , ObjectType type
+        , bool gridAligned
 ) {
     Entity ret;
     ret.velocity = vec3fZero;
@@ -24,6 +25,8 @@ entityCreate(
     ret.texture = texture;
     ret.type = type;
     ret.movementDifficulty = 1.0;
+    ret.gridAligned = gridAligned;
+    ret.isTemp = false;
     return ret;
 }
 

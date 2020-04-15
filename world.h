@@ -44,5 +44,19 @@ worldGetEntity(int i);
 void
 worldFree();
 
+int
+worldCreateAndAddEntity(
+        Vec3f position
+        , ObjectType type
+);
+
+Entity*
+worldGetTileAlignedEntity(Vec3f pos);
+
+void
+worldRemoveEntity(int index);
+
 #define MAP_INDEX(x, y, z) ((int)-z * world.widthTimesHeight + (int)x * world.height + (int)y)
+
+#define MAP_INDEXV(v) ((int)-v.z * world.widthTimesHeight + (int)v.x * world.height + (int)v.y)
 #endif

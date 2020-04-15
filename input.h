@@ -2,6 +2,8 @@
 #define ST_INPUT
 #include <stdbool.h>
 #include <SDL.h>
+#include "object_type.h"
+#include "vec3f.h"
 
 typedef enum Key {
     KEY_NONE
@@ -18,6 +20,8 @@ typedef enum Key {
     , KEY_GIVE_MOVE_ORDER
 
     , KEY_SWITCH_CAMERA_MODE
+    , KEY_SELECT_DELETE_BLOCK
+    , KEY_SELECT_DIRT
 
     , KEY_SELECT
     , KEY_NUMBER
@@ -49,6 +53,11 @@ typedef struct Input {
     InputMode mode;
     int mouseX;
     int mouseY;
+    bool creationModeEnabled;
+    ObjectType object;
+    Vec3f hoveredCoords;
+    int tempObj;
+
 } Input;
 
 extern Input input;

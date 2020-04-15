@@ -12,10 +12,13 @@
 #include "ai_component.h"
 #include "ai_system.h"
 #include "object_type.h"
+#include "object_config.h"
 
 World world;
 
 Floor dirtFloor;
+
+ObjectConfig objectConfigs[OBJECT_NUMBER];
 
 int
 worldAddEntity(Entity entity) {
@@ -25,20 +28,20 @@ worldAddEntity(Entity entity) {
 }
 
 int
-createAndAddEntity(
+worldCreateAndAddEntity(
         Vec3f position
-        , enum Texture texture
-        , bool isWall
         , ObjectType type
 ) {
+    ObjectConfig config = objectConfigs[type];
+    enum Texture texture = config.texture;
     Box3f b = box3fCreate(position, graphics.tileSize);
     Sprite sprite = spriteCreate(b);
     int spriteI = graphicsAddSprite(texture, sprite);
-    Entity entity = entityCreate(b, texture, spriteI);
+    Entity entity = entityCreate(b, texture, spriteI, type, config.isGridAligned);
     int entityI = worldAddEntity(entity);
     Sprite *s = graphicsGetSprite(texture, spriteI);
     s->entity = entityI;
-    if (isWall) {
+    if (config.isGridAligned) {
         int i = MAP_INDEX(position.x, position.y, position.z);
         if (entityI < 20) {
             SDL_Log("%f %f %f", position.x, position.y, position.z);
@@ -52,18 +55,40 @@ createAndAddEntity(
 void
 addWall(int x, int y) {
     Vec3f p = {x, y, 0};
-    createAndAddEntity(p, TEXTURE_WALL, true, OBJECT_WALL);
+    worldCreateAndAddEntity(p, OBJECT_WALL);
 }
 
 void
 addTree(int x, int y) {
     Vec3f p = {x, y, 0};
-    createAndAddEntity(p, TEXTURE_TREE, true, OBJECT_TREE);
+    worldCreateAndAddEntity(p, OBJECT_TREE);
 }
 
 Entity*
 worldGetEntity(int i) {
     return &world.entities.data[i];
+}
+
+Entity*
+worldGetTileAlignedEntity(Vec3f pos) {
+    int i = MAP_INDEX(pos.x, pos.y, pos.z);
+    int entityIndex = world.entityTiles[i];
+    if (entityIndex == -1) {
+        return NULL;
+    }
+    Entity *e = &world.entities.data[entityIndex];
+    return e;
+}
+
+void
+worldRemoveEntity(int index) {
+    Entity *e = worldGetEntity(index);
+    graphicsDeleteSprite(e->texture, e->spriteIndex);
+    if (e->gridAligned) {
+        int mapI = MAP_INDEXV(e->box.position);
+        world.entityTiles[mapI] = -1;
+    }
+    arrayRemove(&world.entities, index);
 }
 
 void
@@ -76,13 +101,26 @@ worldInit() {
     world.tilesN = world.width * world.height * world.depth;
     world.entityTiles = malloc(world.tilesN * sizeof(int));
     memset(world.entityTiles, -1, world.tilesN);
+
+    objectConfigs[OBJECT_HUMAN].texture = TEXTURE_HUMAN;
+    objectConfigs[OBJECT_HUMAN].isGridAligned = false;
+
+    objectConfigs[OBJECT_DIRT_BLOCK].texture = TEXTURE_DIRT_BLOCK;
+    objectConfigs[OBJECT_DIRT_BLOCK].isGridAligned = true;
+
+    objectConfigs[OBJECT_TREE].texture = TEXTURE_TREE;
+    objectConfigs[OBJECT_TREE].isGridAligned = true;
+
+    objectConfigs[OBJECT_WALL].texture = TEXTURE_WALL;
+    objectConfigs[OBJECT_WALL].isGridAligned = true;
+
     EntityArray entityArray = arrayCreate();
     world.entities = entityArray;
 
     {
         enum Texture texture = TEXTURE_HUMAN;
         Vec3f p = {1, 1, 0};
-        int entityI = createAndAddEntity(p, texture, false, OBJECT_HUMAN);
+        int entityI = worldCreateAndAddEntity(p, OBJECT_HUMAN);
         AiComponent ac = aiComponentCreate(entityI);
         int aci = aiSystemAddAiComponent(ac);
         Entity *e = worldGetEntity(entityI);
@@ -92,7 +130,7 @@ worldInit() {
         for (int x = 0 ; x < world.width ; x++) {
             for (int y = 0 ; y < world.height ; y++) {
                 Vec3f p = {x, y, -z};
-                createAndAddEntity(p, TEXTURE_DIRT_BLOCK, true, OBJECT_DIRT_BLOCK);
+                worldCreateAndAddEntity(p, OBJECT_DIRT_BLOCK);
             }
         }
     }

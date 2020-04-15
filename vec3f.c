@@ -89,3 +89,8 @@ bool
 vec3fEqual(Vec3f a, Vec3f b) {
     return a.x == b.x && a.y == b.y && a.z == b.z;
 }
+
+void
+vec3fPrint(Vec3f v) {
+    printf("{.x: %f, .y: %f, .z: %f}", v.x, v.y, v.z);
+}

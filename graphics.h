@@ -41,6 +41,9 @@ graphicsFree();
 int
 graphicsAddSprite(enum Texture texture, Sprite sprite);
 
+void
+graphicsDeleteSprite(enum Texture texture, int index);
+
 Sprite*
 graphicsGetSprite(enum Texture texture, int i);
 
