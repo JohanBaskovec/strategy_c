@@ -7,4 +7,6 @@ typedef enum JobType {
     , JOB_DIGGING
     , JOB_NUMBER
 } JobType;
+
+#define JOB_PRIORITY_NUMBER 10
 #endif

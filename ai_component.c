@@ -6,6 +6,7 @@
 #include <math.h>
 #include "path_finding.h"
 #include "ai_system.h"
+#include "job_priority_queue.h"
 
 #define EQUAL_DELTA(a, b, delta) (fabs(a - b) < delta)
 
@@ -16,7 +17,7 @@ aiComponentCreate(int entityI) {
         , .movementSpeed = 0.5
         , .entity = entityI
         , .pathFinding = pathFindingCreate(world.tilesN)
-        , .jobPriorities = {1.0}
+        , .jobPriorities = jobPriorityQueueCreate()
     };
     return ai;
 }
@@ -25,21 +26,58 @@ void
 aiComponentFree(AiComponent *ai) {
     arrayFree(ai->path);
     pathFindingFree(&ai->pathFinding);
+    jobPriorityQueueFree(&ai->jobPriorities);
+}
+
+void
+aiComponentSetPathTarget(AiComponent *ai , Vec3f target) {
+    ai->target = target;
+    ai->hasTarget = true;
+}
+
+void
+findTileFreeNextToEntity(Entity *e) {
+}
+
+void
+lookForTreeToCut(AiComponent *ai) {
+    float closestTree = 1000;
+    bool foundTree = false;
 }
 
 void
 aiUpdate(AiComponent *ai) {
     Entity *entity = &world.entities.data[ai->entity];
+    // todo: priority queue
+    float highestPriority;
+    int jobToDo;
+    bool findJob = true;
+    for (int i = 0 ; i < JOB_PRIORITY_NUMBER ; i++ ) {
+        JobTypeArray *jobs = &ai->jobPriorities.jobsByPriority[i];
+        for (int k = 0 ; k < jobs->length ; k++) {
+            JobType job = jobs->data[k];
+            if (job == JOB_TREE_CUTTING) {
+                lookForTreeToCut(ai);
+            }
+        }
+
+    }
     if (ai->hasTarget) {
         for (int i = 0 ; i < world.tilesN ; i++) {
             //float gScore =  a->pathFinding.gScores[i];
             float fScore =  ai->pathFinding.fScores[i];
-            if (fScore != -1) {
-                int tileI = world.entityTiles[i];
-                Entity *tile = worldGetEntity(tileI);
-                Sprite *tileSprite = graphicsGetEntitySprite(tile);
-                spriteSetColorAdd(tileSprite, vec3fZero);
+            int tileI = world.entityTiles[i];
+            /*
+            if (tileI < 20) {
+                SDL_Log("world.entityTiles[%d] = %d", i, tileI);
             }
+            */
+            if (tileI == -1) {
+                continue;
+            }
+            Entity *tile = worldGetEntity(tileI);
+            Sprite *tileSprite = graphicsGetEntitySprite(tile);
+            spriteSetColorAdd(tileSprite, vec3fZero);
         }
 
         Vec3fArray path = pathFindingFindPath(
@@ -94,18 +132,13 @@ aiUpdate(AiComponent *ai) {
         for (int i = 0 ; i < world.tilesN ; i++) {
             float fScore =  ai->pathFinding.fScores[i];
             float gScore =  ai->pathFinding.gScores[i];
-            /*
-            if (fScore != -1) {
-                int tileI = world.entityTiles[i];
-                Entity *tile = worldGetEntity(tileI);
-                Sprite *tileSprite = graphicsGetEntitySprite(tile);
-
-                Vec3f colorAdd = {fScore / maxFScore, 0, 0};
-                spriteSetColorAdd(tileSprite, colorAdd);
-            }
-            */
             if (gScore != -1) {
-                int tileI = world.entityTiles[i];
+                // "temporary" hack: we traverse empty space
+                // but colour the block below it
+                int tileI = world.entityTiles[i + world.widthTimesHeight];
+                if (tileI == -1) {
+                    continue;
+                }
                 Entity *tile = worldGetEntity(tileI);
                 Sprite *tileSprite = graphicsGetEntitySprite(tile);
 

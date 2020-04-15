@@ -36,6 +36,7 @@ set(SOURCES
     box3f.c
     ai_system.c
     path_finding.c
+    job_priority_queue.c
 )
 
 add_executable(strategy

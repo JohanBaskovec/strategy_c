@@ -43,4 +43,7 @@ vec3fDivf(Vec3f vec, float f);
 Vec3f
 vec3fSubf(Vec3f vec, float f);
 
+bool
+vec3fEqual(Vec3f a, Vec3f b);
+
 #endif

@@ -6,6 +6,7 @@
 #include "attribute.h"
 #include "skill.h"
 #include "job_type.h"
+#include "job_priority_queue.h"
 
 typedef struct AiComponent {
     int entity;
@@ -20,7 +21,7 @@ typedef struct AiComponent {
     PathFinding pathFinding;
     float attributes[ATTRIBUTE_NUMBER];
     float skills[SKILL_NUMBER];
-    float jobPriorities[JOB_NUMBER];
+    JobPriorityQueue jobPriorities;
 } AiComponent;
 
 ARRAY_DECLARE(AiComponent, AiComponentArray);
@@ -34,4 +35,6 @@ aiUpdate(AiComponent *ai);
 void
 aiComponentFree(AiComponent *ai);
 
+void
+aiComponentSetPathTarget(AiComponent *ai , Vec3f target);
 #endif

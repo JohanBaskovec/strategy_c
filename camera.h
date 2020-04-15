@@ -51,4 +51,7 @@ cameraMoveRight();
 void
 cameraMoveDown();
 
+void
+cameraSwitchMode();
+
 #endif

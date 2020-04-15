@@ -17,16 +17,10 @@ World world;
 
 Floor dirtFloor;
 
-float
-worldGetDifficulty(int x, int y);
-
-void
-worldSetDifficulty(int x, int y, float value);
-
 int
 worldAddEntity(Entity entity) {
     int i = world.entities.length;
-    arrayAdd(world.entities, entity);
+    arrayAdd(&world.entities, entity);
     return i;
 }
 
@@ -45,10 +39,11 @@ createAndAddEntity(
     Sprite *s = graphicsGetSprite(texture, spriteI);
     s->entity = entityI;
     if (isWall) {
-        if (position.z == 1) {
-            worldSetDifficulty(position.x, position.y, 1);
+        int i = MAP_INDEX(position.x, position.y, position.z);
+        if (entityI < 20) {
+            SDL_Log("%f %f %f", position.x, position.y, position.z);
+            SDL_Log("world.entityTiles[%d] = %d", i, entityI);
         }
-        int i = MAP_INDEX(position.x, position.y);
         world.entityTiles[i] = entityI;
     }
     return entityI;
@@ -56,13 +51,13 @@ createAndAddEntity(
 
 void
 addWall(int x, int y) {
-    Vec3f p = {x, y, 1};
+    Vec3f p = {x, y, 0};
     createAndAddEntity(p, TEXTURE_WALL, true, OBJECT_WALL);
 }
 
 void
 addTree(int x, int y) {
-    Vec3f p = {x, y, 1};
+    Vec3f p = {x, y, 0};
     createAndAddEntity(p, TEXTURE_TREE, true, OBJECT_TREE);
 }
 
@@ -74,27 +69,32 @@ worldGetEntity(int i) {
 void
 worldInit() {
     world.end = false;
-    world.width = 100;
-    world.height = 100;
-    world.tilesN = world.width * world.height;
-    world.difficultyMap = malloc(world.tilesN * sizeof(float));
+    world.width = 10;
+    world.height = 10;
+    world.widthTimesHeight = world.width * world.height;
+    world.depth = 10;
+    world.tilesN = world.width * world.height * world.depth;
     world.entityTiles = malloc(world.tilesN * sizeof(int));
-    for (int x = 0 ; x < world.width ; x++) {
-        for (int y = 0 ; y < world.height ; y++) {
-            worldSetDifficulty(x, y, 0.1);
-        }
-    }
-    world.entities.length = 0;
-    world.entities.data = NULL;
+    memset(world.entityTiles, -1, world.tilesN);
+    EntityArray entityArray = arrayCreate();
+    world.entities = entityArray;
 
     {
         enum Texture texture = TEXTURE_HUMAN;
-        Vec3f p = {1, 1, 1};
+        Vec3f p = {1, 1, 0};
         int entityI = createAndAddEntity(p, texture, false, OBJECT_HUMAN);
         AiComponent ac = aiComponentCreate(entityI);
         int aci = aiSystemAddAiComponent(ac);
         Entity *e = worldGetEntity(entityI);
         e->ai = aci;
+    }
+    for (int z = 1 ; z < world.depth ; z++) {
+        for (int x = 0 ; x < world.width ; x++) {
+            for (int y = 0 ; y < world.height ; y++) {
+                Vec3f p = {x, y, -z};
+                createAndAddEntity(p, TEXTURE_DIRT_BLOCK, true, OBJECT_DIRT_BLOCK);
+            }
+        }
     }
     for (int x = 0 ; x < world.width ; x++) {
         for (int y = 0 ; y < world.height ; y++) {
@@ -105,22 +105,19 @@ worldInit() {
                     addTree(x, y);
                 }
             }
-            Vec3f p = {x, y, 0};
-            createAndAddEntity(p, TEXTURE_DIRT_BLOCK, true, OBJECT_DIRT_BLOCK);
         }
     }
-
-
 }
 
 float
-worldGetDifficulty(int x, int y) {
-    return world.difficultyMap[x * world.height + y];
-}
-
-void
-worldSetDifficulty(int x, int y, float value) {
-    world.difficultyMap[x * world.height + y] = value;
+worldGetDifficulty(int x, int y, int z) {
+    int index = MAP_INDEX(x, y, z);
+    int entityIndex = world.entityTiles[index];
+    if (entityIndex == -1) {
+        return 0.1;
+    }
+    Entity *e = &world.entities.data[entityIndex];
+    return e->movementDifficulty;
 }
 
 void
@@ -139,7 +136,7 @@ worldMoveRandom() {
     //int goalX = 1;
     //int goalY = 3;
 
-    Vec3f target = {goalX, goalY, 1};
+    Vec3f target = {goalX, goalY, 0};
     //SDL_Log("worldMoveRandom, target=%d:%d", goalX, goalY);
     aiSystem.aiComponents.data[0].target = target;
     aiSystem.aiComponents.data[0].hasTarget = true;
@@ -148,5 +145,4 @@ worldMoveRandom() {
 void
 worldFree() {
     arrayFree(world.entities);
-    free(world.difficultyMap);
 }

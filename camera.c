@@ -32,6 +32,16 @@ cameraInit() {
     updateCameraVector();
 }
 
+void
+cameraSwitchMode() {
+    if (camera.mode == CAMERA_MODE_FPS) {
+        camera.mode = CAMERA_MODE_RTS;
+        SDL_SetRelativeMouseMode(false);
+    } else {
+        camera.mode = CAMERA_MODE_FPS;
+        SDL_SetRelativeMouseMode(true);
+    }
+}
 
 void
 cameraInitTargetAndViewMatrix() {

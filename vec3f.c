@@ -84,3 +84,8 @@ vec3fSubf(Vec3f vec, float f) {
     };
     return ret;
 }
+
+bool
+vec3fEqual(Vec3f a, Vec3f b) {
+    return a.x == b.x && a.y == b.y && a.z == b.z;
+}

@@ -84,57 +84,27 @@ fixedVoidArrayRemove(Array *a, int i, size_t sizeOfElement) {
 
 #define arrayAdd(arr, element)\
     do {\
-        int newIndex = voidArrayAdd((Array*)&arr, sizeof(element));\
-        arr.data[newIndex] = element;\
-    } while(0);
-
-#define arrayPtrAdd(arr, element)\
-    do {\
         int newIndex = voidArrayAdd((Array*)arr, sizeof(element));\
-        arr->data[newIndex] = element;\
+        (arr)->data[newIndex] = element;\
     } while(0);
 
 #define arrayRemove(arr, i)\
     do {\
-        voidArrayRemove((Array*)&arr, i, sizeof(*arr.data));\
+        voidArrayRemove((Array*)arr, i, sizeof(*((arr)->data)));\
     } while(0);
 
 #define arrayCreate() \
-{\
-    .length = 0\
-    , .allocated = 0\
-    , .data = NULL\
-}
+    {\
+        .length = 0\
+        , .allocated = 0\
+        , .data = NULL\
+    }
 
 #define arrayFree(a)\
     free(a.data);\
     a.length = 0;\
     a.allocated = 0;\
     a.data = NULL;
-
-#define fixedArrayAdd(arr, element)\
-    do {\
-        int newIndex = fixedVoidArrayAdd((Array*)&arr, sizeof(element));\
-        arr.data[newIndex] = element;\
-    } while(0);
-
-#define fixedArrayPtrAdd(arr, element)\
-    do {\
-        int newIndex = fixedVoidArrayAdd((Array*)arr, sizeof(element));\
-        arr->data[newIndex] = element;\
-    } while(0);
-
-#define fixedArrayRemove(arr, i)\
-    do {\
-        fixedVoidArrayRemove((Array*)&arr, i, sizeof(*arr.data));\
-    } while(0);
-
-#define fixedArrayCreate(size) \
-{\
-    .length = 0\
-    , .allocated = 0\
-    , .data = malloc(size)\
-}
 
 #define ARRAY_DECLARE(type, name)\
     typedef struct name {\

@@ -17,6 +17,8 @@ typedef enum Key {
     , KEY_MOVE_TO_RANDOM_LOCATION
     , KEY_GIVE_MOVE_ORDER
 
+    , KEY_SWITCH_CAMERA_MODE
+
     , KEY_SELECT
     , KEY_NUMBER
 } Key;

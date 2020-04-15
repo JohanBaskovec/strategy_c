@@ -23,6 +23,7 @@ entityCreate(
     ret.selected = false;
     ret.texture = texture;
     ret.type = type;
+    ret.movementDifficulty = 1.0;
     return ret;
 }
 

@@ -19,13 +19,13 @@ TEST_END
 
 TEST_START(arrayAddTest)
     TestArray ta = arrayCreate();
-    arrayAdd(ta, 0);
-    arrayAdd(ta, 1);
-    arrayAdd(ta, 2);
-    arrayAdd(ta, 3);
-    arrayAdd(ta, 3);
-    arrayAdd(ta, 3);
-    arrayAdd(ta, 3);
+    arrayAdd(&ta, 0);
+    arrayAdd(&ta, 1);
+    arrayAdd(&ta, 2);
+    arrayAdd(&ta, 3);
+    arrayAdd(&ta, 3);
+    arrayAdd(&ta, 3);
+    arrayAdd(&ta, 3);
     ASSERT_INT_EQUAL(0, ta.data[0]);
     ASSERT_INT_EQUAL(1, ta.data[1]);
     ASSERT_INT_EQUAL(2, ta.data[2]);
@@ -37,15 +37,15 @@ TEST_END
 
 TEST_START(arrayRemoveTest)
     TestArray ta = arrayCreate();
-    arrayAdd(ta, 0);
-    arrayAdd(ta, 1);
-    arrayAdd(ta, 2);
-    arrayAdd(ta, 3);
-    arrayAdd(ta, 3);
-    arrayAdd(ta, 3);
-    arrayAdd(ta, 3);
-    arrayRemove(ta, 0);
-    arrayRemove(ta, 1);
+    arrayAdd(&ta, 0);
+    arrayAdd(&ta, 1);
+    arrayAdd(&ta, 2);
+    arrayAdd(&ta, 3);
+    arrayAdd(&ta, 3);
+    arrayAdd(&ta, 3);
+    arrayAdd(&ta, 3);
+    arrayRemove(&ta, 0);
+    arrayRemove(&ta, 1);
 
     ASSERT_INT_EQUAL(1, ta.data[0]);
     ASSERT_INT_EQUAL(3, ta.data[1]);

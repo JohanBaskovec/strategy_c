@@ -23,17 +23,18 @@ reconstructPath(PathFindingNode start, PathFindingNode *cameFrom, PathFindingNod
     Vec3fArray path = arrayCreate();
     PathFindingNode backtrackNode = current;
     #ifdef ST_PATHFINDING_LOG
-    SDL_Log("reconstructPath: start=%f:%f",start.position.x, start.position.y);
-    SDL_Log("reconstructPath, adding %f:%f", current.position.x, current.position.y);
+    SDL_Log("reconstructPath: start=%f:%f:%f",start.position.x, start.position.y, start.position.z);
+    SDL_Log("reconstructPath, adding %f:%f:%f", current.position.x, current.position.y, current.position.z);
     #endif
-    arrayAdd(path, backtrackNode.position);
+    arrayAdd(&path, backtrackNode.position);
     while (backtrackNode.position.x != start.position.x
-            || backtrackNode.position.y != start.position.y) {
-        int mi = MAP_INDEX(backtrackNode.position.x, backtrackNode.position.y);
+            || backtrackNode.position.y != start.position.y
+            || backtrackNode.position.z != start.position.z) {
+        int mi = MAP_INDEX(backtrackNode.position.x, backtrackNode.position.y, backtrackNode.position.z);
         backtrackNode = cameFrom[mi];
-        arrayAdd(path, backtrackNode.position);
+        arrayAdd(&path, backtrackNode.position);
         #ifdef ST_PATHFINDING_LOG
-        SDL_Log("reconstructPath, adding %f:%f", backtrackNode.position.x, backtrackNode.position.y);
+        SDL_Log("reconstructPath, adding %f:%f:%f", backtrackNode.position.x, backtrackNode.position.y, backtrackNode.position.z);
         #endif
     }
     return path;
@@ -43,27 +44,26 @@ void
 doTile(
         PathFinding *pathFinding
         , PathFindingNode current
-        , int x
-        , int y
+        , Vec3f target
 ) {
-    if ((x == current.position.x && y == current.position.y)
-            || x < 0 || y < 0
-            || x >= world.width || y >= world.height) {
+    if ((vec3fEqual(target, current.position))
+            || target.x < 0 || target.y < 0 || target.z > 0
+            || target.x >= world.width || target.y >= world.height || target.z <= -world.depth ) {
         return;
     }
 
-    int currentIndex = MAP_INDEX(current.position.x, current.position.y);
+    int currentIndex = MAP_INDEX(current.position.x, current.position.y, current.position.z);
 
     float gScoreCurrent = pathFinding->gScores[currentIndex];
     #ifdef ST_PATHFINDING_LOG
-    SDL_Log("Visiting %d:%d\n", x, y);
+    SDL_Log("Visiting %f:%f:%f\n", target.x, target.y, target.z);
     #endif
-    int targetIndex = MAP_INDEX(x, y);
-    float difficulty = worldGetDifficulty(x, y);
+    int targetIndex = MAP_INDEX(target.x, target.y, target.z);
+    float difficulty = worldGetDifficulty(target.x, target.y, target.z);
 
     if (difficulty == 1) {
         #ifdef ST_PATHFINDING_LOG
-        SDL_Log("found impassable wall at %d:%d", x, y);
+        SDL_Log("found impassable wall at %f:%f:%f", target.x, target.y, target.z);
         #endif
         return;
     }
@@ -82,24 +82,23 @@ doTile(
         #endif
         pathFinding->cameFrom[targetIndex] = current;
         pathFinding->gScores[targetIndex] = gScoreTentative;
-        pathFinding->fScores[targetIndex] = gScoreTentative 
-            + length(x, y, pathFinding->goalX, pathFinding->goalY);
+        Vec3f diffFromGoal = vec3fSub(target, pathFinding->goal);
+        pathFinding->fScores[targetIndex] = gScoreTentative + vec3fLength(diffFromGoal);
 
         bool inOpen = false;
         int k = 0;
         for (; k < pathFinding->open.length ; k++) {
             Vec3f position = pathFinding->open.data[k].position;
-            if (position.x == x && position.y == y) {
+            if (vec3fEqual(position, target)) {
                 inOpen = true;
             }
         }
         if (!inOpen) {
-            Vec3f newNodePosition = {x, y, 1};
             #ifdef ST_PATHFINDING_LOG
-            SDL_Log("Adding node %d:%d to open", x, y);
+            SDL_Log("Adding node %f:%f:%f to open", target.x, target.y, target.z);
             #endif
-            PathFindingNode newNode = pathFindingNodeCreate(newNodePosition);
-            arrayAdd(pathFinding->open, newNode);
+            PathFindingNode newNode = pathFindingNodeCreate(target);
+            arrayAdd(&pathFinding->open, newNode);
         }
     }
 }
@@ -107,20 +106,16 @@ doTile(
 Vec3fArray
 pathFindingFindPath(PathFinding *pathFinding, Vec3f start, Vec3f goal) {
     // convert to map grid
-    start.x = roundf(start.x);
-    start.y = roundf(start.y);
-    goal.x =  roundf(goal.x);
-    goal.y =  roundf(goal.y);
-
     #ifdef ST_PATHFINDING_LOG
-    SDL_Log("pathFind: from %f:%f to %f:%f", start.x, start.y, goal.x, goal.y);
+    SDL_Log("pathFind: from %f:%f:%f to %f:%f:%f", start.x, start.y, start.z, goal.x, goal.y, goal.z);
     #endif
 
     Vec3fArray ret = arrayCreate();
     int goalX = goal.x;
     int goalY = goal.y;
-    if (worldGetDifficulty(goalX, goalY) == 1) {
-        SDL_Log("%d:%d is impassable.", goalX, goalY);
+    int goalZ = goal.z;
+    if (worldGetDifficulty(goalX, goalY, goalZ) == 1) {
+        SDL_Log("%d:%d:%d is impassable.", goalX, goalY, goalZ);
         return ret;
     }
 
@@ -129,12 +124,11 @@ pathFindingFindPath(PathFinding *pathFinding, Vec3f start, Vec3f goal) {
         pathFinding->gScores[i] = -1;
         pathFinding->fScores[i] = -1;
     }
-    pathFinding->goalX = goal.x;
-    pathFinding->goalY = goal.y;
+    pathFinding->goal = goal;
 
     PathFindingNode startNode = pathFindingNodeCreate(start);
-    arrayAdd(pathFinding->open, startNode);
-    int currentIndex = MAP_INDEX(start.x, start.y);
+    arrayAdd(&pathFinding->open, startNode);
+    int currentIndex = MAP_INDEX(start.x, start.y, start.z);
     #ifdef ST_PATHFINDING_LOG
     SDL_Log("gScores[%d]=0", currentIndex);
     #endif
@@ -149,7 +143,7 @@ pathFindingFindPath(PathFinding *pathFinding, Vec3f start, Vec3f goal) {
     int count = 0;
     while (pathFinding->open.length != 0) {
         #ifdef ST_PATHFINDING_LOG
-        SDL_Log("Moving to %d %d\n", goalX, goalY);
+        SDL_Log("Moving to %d %d %d\n", goalX, goalY, goalZ);
         SDL_Log("Loop %d\n", count);
         #endif
         count++;
@@ -159,10 +153,10 @@ pathFindingFindPath(PathFinding *pathFinding, Vec3f start, Vec3f goal) {
         for (int i = 0; i < pathFinding->open.length ; i++) {
             PathFindingNode n = pathFinding->open.data[i];
 
-            int aI = MAP_INDEX(n.position.x, n.position.y);
+            int aI = MAP_INDEX(n.position.x, n.position.y, n.position.z);
             float fScore = pathFinding->fScores[aI];
             #ifdef ST_PATHFINDING_LOG
-            SDL_Log("Open: %f:%f, fScore: %f", n.position.x, n.position.y, fScore);
+            SDL_Log("Open: %f:%f:%f, fScore: %f", n.position.x, n.position.y, n.position.z, fScore);
             #endif
             if (fScore < minfScore) {
                 minOpenI = i;
@@ -173,8 +167,8 @@ pathFindingFindPath(PathFinding *pathFinding, Vec3f start, Vec3f goal) {
             fatalError("minOpenI == -1");
         }
         PathFindingNode current = pathFinding->open.data[minOpenI];
-        currentIndex = MAP_INDEX(current.position.x, current.position.y);
-        if (current.position.x == goalX && current.position.y == goalY) {
+        currentIndex = MAP_INDEX(current.position.x, current.position.y, current.position.z);
+        if (vec3fEqual(current.position, goal)) {
             #ifdef ST_PATHFINDING_LOG
             SDL_Log("Found target after %d loops!", count);
             #endif
@@ -183,19 +177,19 @@ pathFindingFindPath(PathFinding *pathFinding, Vec3f start, Vec3f goal) {
         }
         float gScoreCurrent = pathFinding->gScores[currentIndex];
         #ifdef ST_PATHFINDING_LOG
-        SDL_Log("Current: %f:%f at index %d, gScore =%f", current.position.x, current.position.y, minOpenI, gScoreCurrent);
+        SDL_Log("Current: %f:%f:%f at index %d, gScore =%f", current.position.x, current.position.y, current.position.z, minOpenI, gScoreCurrent);
         #endif
         if (gScoreCurrent == -1) {
             fatalError("Current node has no score!!");
         }
-        arrayRemove(pathFinding->open, minOpenI);
+        arrayRemove(&pathFinding->open, minOpenI);
         for (int i = 0; i < pathFinding->open.length ; i++) {
             PathFindingNode n = pathFinding->open.data[i];
 
-            int aI = MAP_INDEX(n.position.x, n.position.y);
+            int aI = MAP_INDEX(n.position.x, n.position.y, n.position.z);
             float fScore = pathFinding->fScores[aI];
             #ifdef ST_PATHFINDING_LOG
-            SDL_Log("Open after removal: %f:%f, fScore: %f", n.position.x, n.position.y, fScore);
+            SDL_Log("Open after removal: %f:%f:%f, fScore: %f", n.position.x, n.position.y, n.position.z, fScore);
             #endif
         }
         #ifdef ST_PATHFINDING_LOG
@@ -203,33 +197,49 @@ pathFindingFindPath(PathFinding *pathFinding, Vec3f start, Vec3f goal) {
         #endif
 
         Vec3f p = current.position;
-        float cornerDifficultyLeft = worldGetDifficulty(p.x-1, p.y);
-        float cornerDifficultyBottom = worldGetDifficulty(p.x, p.y-1);
-        float cornerDifficultyRight = worldGetDifficulty(p.x+1, p.y);
-        float cornerDifficultyTop = worldGetDifficulty(p.x, p.y+1);
+        float cornerDifficultyLeft = worldGetDifficulty(p.x-1, p.y, p.z);
+        float cornerDifficultyBottom = worldGetDifficulty(p.x, p.y-1, p.z);
+        float cornerDifficultyRight = worldGetDifficulty(p.x+1, p.y, p.z);
+        float cornerDifficultyTop = worldGetDifficulty(p.x, p.y+1, p.z);
         //bottom left
         if (cornerDifficultyLeft != 1 && cornerDifficultyBottom != 1) {
-            doTile(pathFinding, current, p.x-1, p.y-1);
+            Vec3f target = {p.x-1, p.y-1, p.z};
+            doTile(pathFinding, current, target);
         }
         // left
-        doTile(pathFinding, current, p.x-1, p.y);
+        {
+            Vec3f target = {p.x-1, p.y, p.z};
+            doTile(pathFinding, current, target);
+        }
         // top left
         if (cornerDifficultyLeft != 1 && cornerDifficultyTop != 1) {
-            doTile(pathFinding, current, p.x-1, p.y+1);
+            Vec3f target = {p.x-1, p.y+1, p.z};
+            doTile(pathFinding, current, target);
         }
         // bottom
-        doTile(pathFinding, current, p.x,   p.y-1);
+        {
+            Vec3f target = {p.x, p.y-1, p.z};
+            doTile(pathFinding, current, target);
+        }
         // top
-        doTile(pathFinding, current, p.x,   p.y+1);
+        {
+            Vec3f target = {p.x, p.y+1, p.z};
+            doTile(pathFinding, current, target);
+        }
         // bottom right
         if (cornerDifficultyRight != 1 && cornerDifficultyBottom != 1) {
-            doTile(pathFinding, current, p.x+1, p.y-1);
+            Vec3f target = {p.x+1, p.y-1, p.z};
+            doTile(pathFinding, current, target);
         }
         // right
-        doTile(pathFinding, current, p.x+1, p.y);
+        {
+            Vec3f target = {p.x+1, p.y, p.z};
+            doTile(pathFinding, current, target);
+        }
         // top right
         if (cornerDifficultyRight != 1 && cornerDifficultyTop != 1) {
-            doTile(pathFinding, current, p.x+1, p.y+1);
+            Vec3f target = {p.x+1, p.y+1, p.z};
+            doTile(pathFinding, current, target);
         }
 
     }
@@ -257,5 +267,7 @@ pathFindingCreate(int worldSize) {
         , .gScores = malloc(sizeof(float) * world.tilesN)
         , .fScores = malloc(sizeof(float) * world.tilesN)
     };
+    memset(ret.gScores, -1, world.tilesN);
+    memset(ret.fScores, -1, world.tilesN);
     return ret;
 }

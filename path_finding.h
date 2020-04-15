@@ -18,8 +18,7 @@ typedef struct PathFinding {
     PathFindingNodeArray open;
 
     // TODO: use Vec2f struct
-    int goalX;
-    int goalY;
+    Vec3f goal;
 } PathFinding;
 
 Vec3fArray

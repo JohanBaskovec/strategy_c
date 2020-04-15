@@ -32,6 +32,16 @@ releaseKeyThisFrame(Key k) {
 }
 
 void
+switchInputMode() {
+    if (input.mode == INPUT_MODE_FPS) {
+        input.mode = INPUT_MODE_RTS;
+    } else {
+        input.mode = INPUT_MODE_FPS;
+    }
+    cameraSwitchMode();
+}
+
+void
 inputInit() {
     input.mode = INPUT_MODE_RTS;
     input.hoveredEntity = -1;
@@ -56,11 +66,15 @@ inputInit() {
     input.keyMapping[INPUT_MODE_ALL][SDL_SCANCODE_R] =  KEY_MOVE_TO_RANDOM_LOCATION;
     input.timeLimit[KEY_MOVE_TO_RANDOM_LOCATION] = 1000;
 
+    input.keyMapping[INPUT_MODE_ALL][SDL_SCANCODE_C] = KEY_SWITCH_CAMERA_MODE;
+    input.timeLimit[KEY_SWITCH_CAMERA_MODE] = 500;
+
     input.mouseMapping[1] = KEY_SELECT;
     input.mouseMapping[3] = KEY_GIVE_MOVE_ORDER;
 
     input.mouseWheelMapping[INPUT_MODE_RTS][MOUSE_WHEEL_UP] = KEY_CAMERA_MOVE_FRONT;
     input.mouseWheelMapping[INPUT_MODE_RTS][MOUSE_WHEEL_DOWN] = KEY_CAMERA_MOVE_BACK;
+
 }
 
 void
@@ -156,10 +170,9 @@ inputPollEvents(Uint32 ticks) {
         if (ai != NULL) {
             Entity *hoveredEntity = &world.entities.data[input.hoveredEntity];
             Vec3f target = hoveredEntity->box.position;
-            target.z = 1;
+            target.z = 0;
             SDL_Log("moving selected entity %d to=%f:%f", input.selectedEntity, target.x, target.y);
-            ai->target = target;
-            ai->hasTarget = true;
+            aiComponentSetPathTarget(ai, target);
         }
     }
 
@@ -183,6 +196,8 @@ inputPollEvents(Uint32 ticks) {
     }
 
     DO_WITH_MINIMUM_DELAY(KEY_MOVE_TO_RANDOM_LOCATION, worldMoveRandom);
+
+    DO_WITH_MINIMUM_DELAY(KEY_SWITCH_CAMERA_MODE, switchInputMode)
 }
 
 

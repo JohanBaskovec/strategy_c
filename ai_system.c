@@ -28,7 +28,7 @@ aiSystemUpdate() {
 int
 aiSystemAddAiComponent(AiComponent e) {
     int newIndex = aiSystem.aiComponents.length;
-    arrayAdd(aiSystem.aiComponents, e);
+    arrayAdd(&aiSystem.aiComponents, e);
     return newIndex;
 }
 

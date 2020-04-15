@@ -40,7 +40,7 @@ createTexture(GLuint texture, char const *fileName, GLenum format);
 int
 graphicsAddSprite(enum Texture texture, Sprite sprite) {
     int i = graphics.sprites[texture].length;
-    arrayAdd(graphics.sprites[texture], sprite);
+    arrayAdd(&graphics.sprites[texture], sprite);
     return i;
 }
 

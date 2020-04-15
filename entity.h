@@ -16,6 +16,7 @@ typedef struct Entity {
     bool hovered;
     bool selected;
     ObjectType type;
+    float movementDifficulty;
 } Entity;
 
 Entity
