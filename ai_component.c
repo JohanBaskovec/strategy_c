@@ -64,14 +64,9 @@ aiUpdate(AiComponent *ai) {
     }
     if (ai->hasTarget) {
         for (int i = 0 ; i < world.tilesN ; i++) {
-            //float gScore =  a->pathFinding.gScores[i];
+            //int targetIndex = MAP_INDEX(target.x, target.y, target.z);
             float fScore =  ai->pathFinding.fScores[i];
             int tileI = world.entityTiles[i];
-            /*
-            if (tileI < 20) {
-                SDL_Log("world.entityTiles[%d] = %d", i, tileI);
-            }
-            */
             if (tileI == -1) {
                 continue;
             }

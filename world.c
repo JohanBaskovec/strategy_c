@@ -45,10 +45,10 @@ worldCreateAndAddEntity(
     s->entity = entityI;
     if (config.isGridAligned) {
         int i = MAP_INDEX(position.x, position.y, position.z);
-        if (entityI < 20) {
-            SDL_Log("%f %f %f", position.x, position.y, position.z);
-            SDL_Log("world.entityTiles[%d] = %d", i, entityI);
-        }
+        /*
+        SDL_Log("%f %f %f", position.x, position.y, position.z);
+        */
+    SDL_Log("world.entityTiles[%d] = %d", i, entityI);
         world.entityTiles[i] = entityI;
     }
     return entityI;
@@ -89,6 +89,7 @@ worldRemoveEntity(int index) {
     if (e->gridAligned) {
         int mapI = MAP_INDEXV(e->box.position);
         world.entityTiles[mapI] = -1;
+        SDL_Log("Removed grid aligned entity at %d", mapI);
     }
     fixedArrayRemove(&world.entities, index);
 }
@@ -96,13 +97,15 @@ worldRemoveEntity(int index) {
 void
 worldInit() {
     world.end = false;
-    world.width = 50;
-    world.height = 50;
+    world.width = 20;
+    world.height = 20;
     world.widthTimesHeight = world.width * world.height;
-    world.depth = 50;
+    world.depth = 20;
     world.tilesN = world.width * world.height * world.depth;
     world.entityTiles = malloc(world.tilesN * sizeof(int));
-    memset(world.entityTiles, -1, world.tilesN);
+    for (int i = 0 ; i < world.tilesN ; i++) {
+        world.entityTiles[i] = -1;
+    }
     fixedArrayInit(&world.entities, ENTITY_MAX_NUMBER);
 
     objectConfigs[OBJECT_HUMAN].texture = TEXTURE_HUMAN;
@@ -118,7 +121,7 @@ worldInit() {
     objectConfigs[OBJECT_WALL].isGridAligned = true;
 
     {
-        Vec3f p = {1, 1, 0};
+        Vec3f p = {0, 1, 0};
         int entityI = worldCreateAndAddEntity(p, OBJECT_HUMAN, true);
         AiComponent ac = aiComponentCreate(entityI);
         int aci = aiSystemAddAiComponent(ac);
@@ -128,11 +131,15 @@ worldInit() {
     for (int z = 1 ; z < world.depth ; z++) {
         for (int x = 0 ; x < world.width ; x++) {
             for (int y = 0 ; y < world.height ; y++) {
+                if (x == 1 && z == 1) {
+                    continue;
+                }
                 Vec3f p = {x, y, -z};
-                worldCreateAndAddEntity(p, OBJECT_DIRT_BLOCK, z == 1);
+                worldCreateAndAddEntity(p, OBJECT_DIRT_BLOCK, true);
             }
         }
     }
+    /*
     for (int x = 0 ; x < world.width ; x++) {
         for (int y = 0 ; y < world.height ; y++) {
             if (x != 1 && y != 1) {
@@ -144,18 +151,32 @@ worldInit() {
             }
         }
     }
+    */
     SDL_Log("Entity memory = %ldb", ENTITY_MAX_NUMBER * sizeof(Entity));
     SDL_Log("Sprites memory = %ldb", SPRITE_MAX_NUMBER * TEXTURE_NUMBER * sizeof(Sprite));
+
 }
 
 float
-worldGetDifficulty(int x, int y, int z) {
-    int index = MAP_INDEX(x, y, z);
+worldGetDifficulty(Vec3f v) {
+    MinMaxVec mm = worldGetMinMaxPos(v);
+    if (v.x < mm.min.x || v.x > mm.max.x
+            || v.y < mm.min.y || v.y > mm.max.y
+            || v.z < mm.min.z || v.z > mm.max.z) {
+        return 1;
+    }
+    int index = MAP_INDEXV(v);
     int entityIndex = world.entityTiles[index];
     if (entityIndex == -1) {
         return 0.1;
     }
     Entity *e = &world.entities.data[entityIndex];
+    vec3fPrint(mm.min);
+    printf("\n");
+    SDL_Log("worldGetDifficulty(%f, %f, %f): index=%d, entityIndex=%d, e=%p", v.x, v.y, v.z, index, entityIndex, e);
+    if (e == NULL) {
+        return 0;
+    }
     return e->movementDifficulty;
 }
 
@@ -193,4 +214,23 @@ worldMoveRandom() {
 
 void
 worldFree() {
+}
+
+MinMaxVec
+worldGetMinMaxPos(Vec3f p) {
+    MinMaxVec m;
+
+    Vec3f min;
+    min.x = fmax(0, p.x - 1.1);
+    min.y = fmax(0, p.y - 1.1);
+    min.z = fmax(-world.depth + 1, p.z - 1.1);
+
+    Vec3f max;
+    max.x = fmin(world.width, p.x + 1.1);
+    max.y = fmin(world.height, p.y + 1.1);
+    max.z = fmin(0, p.z + 1.1);
+
+    m.min = min;
+    m.max = max;
+    return m;
 }

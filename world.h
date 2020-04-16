@@ -40,7 +40,7 @@ void
 worldMoveRandom();
 
 float
-worldGetDifficulty(int x, int y, int z);
+worldGetDifficulty(Vec3f v);
 
 void
 worldSetDifficulty(int x, int y, float value);
@@ -67,4 +67,12 @@ worldRemoveEntity(int index);
 #define MAP_INDEX(x, y, z) ((int)-z * world.widthTimesHeight + (int)x * world.height + (int)y)
 
 #define MAP_INDEXV(v) ((int)-v.z * world.widthTimesHeight + (int)v.x * world.height + (int)v.y)
+
+typedef struct MinMaxVec {
+    Vec3f min;
+    Vec3f max;
+} MinMaxVec;
+
+MinMaxVec
+worldGetMinMaxPos(Vec3f p);
 #endif

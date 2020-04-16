@@ -141,16 +141,10 @@ creationModeSetObject(ObjectType t) {
 void
 revealSurroundingBlocks(Entity *e) {
     Vec3f p = e->box.position;
-    Vec3f min;
-    min.x = fmax(0, p.x - 1.1);
-    min.y = fmax(0, p.y - 1.1);
-    min.z = fmin(0, p.z + 1.1);
-
-    Vec3f max;
-    max.x = fmin(world.width, p.x + 1.1);
-    max.y = fmin(world.height, p.y + 1.1);
-    max.z = fmax(-world.depth, p.z - 1.1);
-    for (int z = min.z ; z > max.z ; z--) {
+    MinMaxVec mmv = worldGetMinMaxPos(p);
+    Vec3f min = mmv.min;
+    Vec3f max = mmv.max;
+    for (int z = min.z ; z < max.z ; z++) {
         for (int x = min.x ; x < max.x ; x++) {
             for (int y = min.y ; y < max.y ; y++) {
                 Vec3f v = {x, y, z};
@@ -232,7 +226,7 @@ inputPollEvents(Uint32 ticks) {
         if (ai != NULL) {
             Entity *hoveredEntity = &world.entities.data[input.hoveredEntity];
             Vec3f target = hoveredEntity->box.position;
-            target.z = 0;
+            target.z = target.z + 1;
             SDL_Log("moving selected entity %d to=%f:%f", input.selectedEntity, target.x, target.y);
             aiComponentSetPathTarget(ai, target);
         }
@@ -261,12 +255,14 @@ inputPollEvents(Uint32 ticks) {
 
     DO_WITH_MINIMUM_DELAY(KEY_SWITCH_CAMERA_MODE, switchInputMode)
 
-    DO_WITH_MINIMUM_DELAY(KEY_SELECT, pressSelectButton)
-    if (input.pressedKeys[KEY_SELECT_DIRT]) {
+    if (input.pressedKeysThisFrame[KEY_SELECT]) {
+        pressSelectButton();
+    }
+    if (input.pressedKeysThisFrame[KEY_SELECT_DIRT]) {
         creationModeSetObject(OBJECT_WALL);
-    } else if (input.pressedKeys[KEY_SELECT_NONE]) {
+    } else if (input.pressedKeysThisFrame[KEY_SELECT_NONE]) {
         creationModeSetObject(OBJECT_NONE);
-    } else if (input.pressedKeys[KEY_SELECT_DELETE_BLOCK]) {
+    } else if (input.pressedKeysThisFrame[KEY_SELECT_DELETE_BLOCK]) {
         creationModeSetObject(OBJECT_EMPTINESS);
     }
 
@@ -300,16 +296,10 @@ hoverEntity(Entity *e) {
         Vec3f closestPos;
         bool found = false;
         Vec3f p = s->box.position;
-        Vec3f min;
-        min.x = fmax(0, p.x - 1.1);
-        min.y = fmax(0, p.y - 1.1);
-        min.z = fmin(0, p.z + 1.1);
-
-        Vec3f max;
-        max.x = fmin(world.width, p.x + 1.1);
-        max.y = fmin(world.height, p.y + 1.1);
-        max.z = fmax(-world.depth, p.z - 1.1);
-        for (int z = min.z ; z > max.z ; z--) {
+        MinMaxVec mmv = worldGetMinMaxPos(p);
+        Vec3f min = mmv.min;
+        Vec3f max = mmv.max;
+        for (int z = min.z ; z < max.z ; z++) {
             for (int x = min.x ; x < max.x ; x++) {
                 for (int y = min.y ; y < max.y ; y++) {
                     Vec3f v = {x, y, z};
