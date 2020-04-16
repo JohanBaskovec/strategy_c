@@ -39,7 +39,7 @@ worldCreateAndAddEntity(
     Box3f b = box3fCreate(position, graphics.tileSize);
     Sprite sprite = spriteCreate(b, visible);
     int spriteI = graphicsAddSprite(texture, sprite);
-    Entity entity = entityCreate(b, texture, spriteI, type, config.isGridAligned);
+    Entity entity = entityCreate(b, texture, spriteI, type, config.isGridAligned, visible);
     int entityI = worldAddEntity(entity);
     Sprite *s = graphicsGetSprite(texture, spriteI);
     s->entity = entityI;
@@ -48,7 +48,7 @@ worldCreateAndAddEntity(
         /*
         SDL_Log("%f %f %f", position.x, position.y, position.z);
         */
-    SDL_Log("world.entityTiles[%d] = %d", i, entityI);
+        SDL_Log("world.entityTiles[%d] = %d", i, entityI);
         world.entityTiles[i] = entityI;
     }
     return entityI;
@@ -97,11 +97,24 @@ worldRemoveEntity(int index) {
 void
 worldInit() {
     world.end = false;
-    world.width = 20;
-    world.height = 20;
-    world.widthTimesHeight = world.width * world.height;
-    world.depth = 20;
-    world.tilesN = world.width * world.height * world.depth;
+    Vec3i size = {8, 8, 8};
+    Vec3i max = {size.x - 1, size.y - 1, 0};
+    Vec3i min = {0, 0, -size.z + 1};
+    world.box.max = max;
+    world.box.min = min;
+    world.box.size = size;
+
+    world.tilesN = size.x * size.y * size.z;
+
+    world.widthTimesHeight = world.box.size.x * world.box.size.y;
+    printf("World size: ");
+    vec3iPrint(world.box.size);
+    printf("\n");
+    printf("Coordinates range from");
+    vec3iPrint(world.box.min);
+    printf(" to ");
+    vec3iPrint(world.box.max);
+    printf("\n");
     world.entityTiles = malloc(world.tilesN * sizeof(int));
     for (int i = 0 ; i < world.tilesN ; i++) {
         world.entityTiles[i] = -1;
@@ -128,21 +141,22 @@ worldInit() {
         Entity *e = worldGetEntity(entityI);
         e->ai = aci;
     }
-    for (int z = 1 ; z < world.depth ; z++) {
-        for (int x = 0 ; x < world.width ; x++) {
-            for (int y = 0 ; y < world.height ; y++) {
-                if (x == 1 && z == 1) {
+    for (int z = world.box.min.z ; z <= world.box.max.z - 1; z++) {
+        for (int x = world.box.min.x ; x <= world.box.max.x ; x++) {
+            for (int y = world.box.min.y ; y <= world.box.max.y ; y++) {
+                if (x == 1 && z == world.box.max.z - 1) {
                     continue;
                 }
-                Vec3f p = {x, y, -z};
-                worldCreateAndAddEntity(p, OBJECT_DIRT_BLOCK, true);
+                Vec3f p = {x, y, z};
+                worldCreateAndAddEntity(p, OBJECT_DIRT_BLOCK, 
+                        (z==world.box.max.z - 1 || x == 1));
             }
         }
     }
     /*
-    for (int x = 0 ; x < world.width ; x++) {
-        for (int y = 0 ; y < world.height ; y++) {
-            if (x != 1 && y != 1) {
+    for (int x = world.box.min.x ; x <= world.box.max.x ; x++) {
+        for (int y = world.box.min.y ; y <= world.box.max.y ; y++) {
+            if (x != 0 && x != 1 && y != 1) {
                 if (rand() % 5 == 0) {
                     addWall(x, y);
                 } else if (rand() % 5 == 0) {
@@ -152,6 +166,7 @@ worldInit() {
         }
     }
     */
+    addTree(2, 1);
     SDL_Log("Entity memory = %ldb", ENTITY_MAX_NUMBER * sizeof(Entity));
     SDL_Log("Sprites memory = %ldb", SPRITE_MAX_NUMBER * TEXTURE_NUMBER * sizeof(Sprite));
 
@@ -171,9 +186,11 @@ worldGetDifficulty(Vec3f v) {
         return 0.1;
     }
     Entity *e = &world.entities.data[entityIndex];
+    /*
     vec3fPrint(mm.min);
     printf("\n");
     SDL_Log("worldGetDifficulty(%f, %f, %f): index=%d, entityIndex=%d, e=%p", v.x, v.y, v.z, index, entityIndex, e);
+    */
     if (e == NULL) {
         return 0;
     }
@@ -201,8 +218,8 @@ worldUpdate() {
 
 void
 worldMoveRandom() {
-    int goalX = rand() % world.width;
-    int goalY = rand() % world.height;
+    int goalX = rand() % world.box.size.x;
+    int goalY = rand() % world.box.size.y;
     //int goalX = 1;
     //int goalY = 3;
 
@@ -221,14 +238,33 @@ worldGetMinMaxPos(Vec3f p) {
     MinMaxVec m;
 
     Vec3f min;
-    min.x = fmax(0, p.x - 1.1);
-    min.y = fmax(0, p.y - 1.1);
-    min.z = fmax(-world.depth + 1, p.z - 1.1);
+    min.x = fmax(world.box.min.x, p.x - 1.1);
+    min.y = fmax(world.box.min.y, p.y - 1.1);
+    min.z = fmax(world.box.min.z, p.z - 1.1);
 
     Vec3f max;
-    max.x = fmin(world.width, p.x + 1.1);
-    max.y = fmin(world.height, p.y + 1.1);
-    max.z = fmin(0, p.z + 1.1);
+    max.x = fmin(world.box.max.x, p.x + 1.1);
+    max.y = fmin(world.box.max.y, p.y + 1.1);
+    max.z = fmin(world.box.max.z, p.z + 1.1);
+
+    m.min = min;
+    m.max = max;
+    return m;
+}
+
+MinMaxVeci
+worldGetMinMaxPosi(Vec3i p) {
+    MinMaxVeci m;
+
+    Vec3i min;
+    min.x = fmax(world.box.min.x, p.x - 1);
+    min.y = fmax(world.box.min.y, p.y - 1);
+    min.z = fmax(world.box.min.z, p.z - 1);
+
+    Vec3i max;
+    max.x = fmin(world.box.max.x, p.x + 1);
+    max.y = fmin(world.box.max.y, p.y + 1);
+    max.z = fmin(world.box.max.z, p.z + 1);
 
     m.min = min;
     m.max = max;

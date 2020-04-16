@@ -12,6 +12,7 @@ entityCreate(
         , int spriteIndex
         , ObjectType type
         , bool gridAligned
+        , bool reachable
 ) {
     Entity ret;
     ret.velocity = vec3fZero;
@@ -29,6 +30,7 @@ entityCreate(
     ret.isTemp = false;
     ret.keep = true;
     ret.id = -1;
+    ret.reachable = reachable;
     return ret;
 }
 

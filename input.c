@@ -141,17 +141,19 @@ creationModeSetObject(ObjectType t) {
 void
 revealSurroundingBlocks(Entity *e) {
     Vec3f p = e->box.position;
-    MinMaxVec mmv = worldGetMinMaxPos(p);
-    Vec3f min = mmv.min;
-    Vec3f max = mmv.max;
-    for (int z = min.z ; z < max.z ; z++) {
-        for (int x = min.x ; x < max.x ; x++) {
-            for (int y = min.y ; y < max.y ; y++) {
+    Vec3i pi = {p.x, p.y, p.z};
+    MinMaxVeci mmv = worldGetMinMaxPosi(pi);
+    Vec3i min = mmv.min;
+    Vec3i max = mmv.max;
+    for (int z = min.z ; z <= max.z ; z++) {
+        for (int x = min.x ; x <= max.x ; x++) {
+            for (int y = min.y ; y <= max.y ; y++) {
                 Vec3f v = {x, y, z};
                 Entity *revealedEntity = worldGetTileAlignedEntity(v);
                 vec3fPrint(v);
                 printf("\n");
                 if (revealedEntity != NULL) {
+                    revealedEntity->reachable = true;
                     Sprite *s = graphicsGetEntitySprite(revealedEntity);
                     s->visible = true;
                 }

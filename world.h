@@ -9,6 +9,8 @@
 #include "graphics.h"
 #include "entity.h"
 #include "ai_component.h"
+#include "vec3i.h"
+#include "box3i.h"
 
 #define ENTITY_MAX_NUMBER 200000
 typedef struct EntityFixedArray {
@@ -18,14 +20,12 @@ typedef struct EntityFixedArray {
 } EntityFixedArray;
 
 typedef struct World {
-    int width;
-    int height;
     int widthTimesHeight;
-    int depth;
     int tilesN;
     EntityFixedArray entities;
     bool end;
     int *entityTiles;
+    Box3i box;
 } World;
 
 extern World world;
@@ -64,9 +64,9 @@ worldGetTileAlignedEntity(Vec3f pos);
 void
 worldRemoveEntity(int index);
 
-#define MAP_INDEX(x, y, z) ((int)-z * world.widthTimesHeight + (int)x * world.height + (int)y)
+#define MAP_INDEX(ax, ay, az) ((int)(-(az)) * world.widthTimesHeight + (int)ax * world.box.size.y + (int)ay)
 
-#define MAP_INDEXV(v) ((int)-v.z * world.widthTimesHeight + (int)v.x * world.height + (int)v.y)
+#define MAP_INDEXV(v) ((int)(-(v.z)) * world.widthTimesHeight + (int)v.x * world.box.size.y + (int)v.y)
 
 typedef struct MinMaxVec {
     Vec3f min;
@@ -75,4 +75,12 @@ typedef struct MinMaxVec {
 
 MinMaxVec
 worldGetMinMaxPos(Vec3f p);
+
+typedef struct MinMaxVeci {
+    Vec3i min;
+    Vec3i max;
+} MinMaxVeci;
+
+MinMaxVeci
+worldGetMinMaxPosi(Vec3i p);
 #endif

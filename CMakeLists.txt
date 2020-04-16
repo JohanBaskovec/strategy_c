@@ -37,6 +37,8 @@ set(SOURCES
     ai_system.c
     path_finding.c
     job_priority_queue.c
+    vec3i.c
+    box3i.c
 )
 
 add_executable(strategy

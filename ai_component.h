@@ -8,6 +8,14 @@
 #include "job_type.h"
 #include "job_priority_queue.h"
 
+typedef enum AiState {
+    AI_STATE_LOOKING_FOR_WORK,
+    AI_STATE_MOVING_TO_WORK,
+    AI_STATE_WORKING,
+    AI_STATE_IDLE,
+    AI_STATE_NUMBER
+} AiState;
+
 typedef struct AiComponent {
     int entity;
     bool hasTarget;
@@ -22,6 +30,9 @@ typedef struct AiComponent {
     float attributes[ATTRIBUTE_NUMBER];
     float skills[SKILL_NUMBER];
     JobPriorityQueue jobPriorities;
+    int entityTarget;
+    JobType currentJob;
+    AiState state;
 } AiComponent;
 
 ARRAY_DECLARE(AiComponent, AiComponentArray);

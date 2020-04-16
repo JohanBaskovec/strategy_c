@@ -10,6 +10,12 @@ vec3fLength(Vec3f vec) {
 }
 
 float
+vec3fDistance(Vec3f a, Vec3f b) {
+    Vec3f diff = vec3fSub(a, b);
+    return vec3fLength(diff);
+}
+
+float
 vec3fRelativeLength(Vec3f vec) {
     return vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
 }

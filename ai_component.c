@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include "assert.h"
 #include "entity.h"
 #include "array.h"
 #include "world.h"
@@ -18,6 +19,7 @@ aiComponentCreate(int entityI) {
         , .entity = entityI
         , .pathFinding = pathFindingCreate(world.tilesN)
         , .jobPriorities = jobPriorityQueueCreate()
+        , .state = AI_STATE_IDLE
     };
     return ai;
 }
@@ -39,10 +41,101 @@ void
 findTileFreeNextToEntity(Entity *e) {
 }
 
+typedef struct Vec3fOptional {
+    Vec3f value;
+    bool valid;
+} Vec3fOptional;
+
+Vec3fOptional
+findClosestEmptyTileNextToGridAlignedEntity(Entity *ai, Entity *e) {
+    Vec3fOptional ret = {.valid = false};
+    assert(e->gridAligned);
+
+    Vec3f pos = e->box.position;
+    Vec3i posi = {pos.x, pos.y, pos.z};
+    MinMaxVeci mmv = worldGetMinMaxPosi(posi);
+    Vec3i min = mmv.min;
+    Vec3i max = mmv.max;
+
+    float shortestDist = 1000;
+    Vec3f target;
+    for (int z = min.z; z <= max.z ; z++) {
+        for (int x = min.x ; x <= max.x ; x++) {
+            for (int y = min.y ; y <= max.y ; y++) {
+                int mapI = MAP_INDEX(x, y, z);
+                int entityI = world.entityTiles[mapI];
+                if (entityI == -1) {
+                    int belowI = MAP_INDEX(x, y, z - 1);
+                    int belowEntityI = world.entityTiles[belowI];
+                    //printf("free space at %d %d %d\n %d %d\n", x, y, z, belowI, belowEntityI);
+                    if (belowEntityI == -1) {
+                        //printf("nothing to stand on!!\n");
+                        // nothing to stand on!
+                        continue;
+                    }
+
+                    float distance = vec3fDistance(e->box.position, ai->box.position);
+                    if (distance < shortestDist) {
+                        shortestDist = distance;
+                        Vec3f v = {x, y, z};
+                        ret.value = v;
+                        ret.valid = true;
+                    }
+                    //printf("Distance: %f. Shortest distance: %f\n", distance, shortestDist);
+                }
+            }
+        }
+    }
+    /*
+    if (ret.valid) {
+        printf("Moving to");
+        vec3fPrint(ret.value);
+        printf("\n");
+    } else {
+        printf("No empty space next to entity\n");
+    }
+    */
+    return ret;
+}
+
 void
 lookForTreeToCut(AiComponent *ai) {
-    float closestTree = 1000;
+    float closestDist = 1000;
+    Entity *closestTree;
     bool foundTree = false;
+    SDL_Log("looking for tree");
+    Entity *aiEntity = worldGetEntity(ai->entity);
+    Vec3f aiPosition = aiEntity->box.position;
+    for (int i = 0 ; i < world.entities.length ; i++) {
+        Entity *tree = &world.entities.data[i];
+        if (tree->reachable && tree->keep && tree->type == OBJECT_TREE) {
+            float dist = vec3fDistance(aiPosition, tree->box.position);
+            if (closestDist > dist) {
+                closestDist = dist;
+                closestTree = tree;
+            }
+        }
+    }
+    if (closestTree == NULL) {
+        //printf("Found not tree :(\n");
+        return;
+    }
+    //printf("Found a tree at");
+    if (closestTree->id == ai->entityTarget) {
+        //printf("already cutting this tree\n");
+        return;
+    }
+
+    ai->entityTarget = closestTree->id;
+    /*
+    vec3fPrint(closestTree->box.position);
+    printf("\n");
+    */
+    Vec3fOptional target = findClosestEmptyTileNextToGridAlignedEntity(aiEntity, closestTree);
+    if (target.valid) {
+        ai->state = AI_STATE_MOVING_TO_WORK;
+        aiComponentSetPathTarget(ai, target.value);
+    }
 }
 
 void
@@ -52,17 +145,25 @@ aiUpdate(AiComponent *ai) {
     float highestPriority;
     int jobToDo;
     bool findJob = true;
-    for (int i = 0 ; i < JOB_PRIORITY_NUMBER ; i++ ) {
-        JobTypeArray *jobs = &ai->jobPriorities.jobsByPriority[i];
-        for (int k = 0 ; k < jobs->length ; k++) {
-            JobType job = jobs->data[k];
-            if (job == JOB_TREE_CUTTING) {
-                lookForTreeToCut(ai);
+    if (ai->state == AI_STATE_IDLE) {
+        ai->state = AI_STATE_LOOKING_FOR_WORK;
+        for (int i = 0 ; i < JOB_PRIORITY_NUMBER ; i++ ) {
+            JobTypeArray *jobs = &ai->jobPriorities.jobsByPriority[i];
+            for (int k = 0 ; k < jobs->length ; k++) {
+                JobType job = jobs->data[k];
+                if (job == JOB_TREE_CUTTING) {
+                    lookForTreeToCut(ai);
+                }
             }
-        }
 
+        }
+    }
+    if (ai->state == AI_STATE_WORKING) {
+        // todo: cut tree
+        // when done, set ai->state to idle
     }
     if (ai->hasTarget) {
+        // todo: if moving to work, check that target object still exists
         for (int i = 0 ; i < world.tilesN ; i++) {
             //int targetIndex = MAP_INDEX(target.x, target.y, target.z);
             float fScore =  ai->pathFinding.fScores[i];
@@ -173,6 +274,9 @@ aiUpdate(AiComponent *ai) {
                 } else {
                     ai->isMoving = false;
                     entity->velocity = vec3fZero;
+                    if (ai->state == AI_STATE_MOVING_TO_WORK) {
+                        ai->state == AI_STATE_WORKING;
+                    }
                 }
             } else {
                 float length = vec3fLength(diff);

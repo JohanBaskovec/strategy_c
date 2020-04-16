@@ -18,7 +18,6 @@ float length(float aX, float aY, float bX, float bY) {
     return sqrt(x * x + y * y);
 }
 
-#define ST_PATHFINDING_LOG
 Vec3fArray
 reconstructPath(PathFindingNode start, PathFindingNode *cameFrom, PathFindingNode current) {
     Vec3fArray path = arrayCreate();
@@ -48,8 +47,7 @@ doTile(
         , Vec3f target
 ) {
     if ((vec3fEqual(target, current.position))
-            || target.x < 0 || target.y < 0 || target.z > 0
-            || target.x >= world.width || target.y >= world.height || target.z < -world.depth ) {
+            || !box3iContainsVec3f(world.box, target)) {
         return;
     }
 

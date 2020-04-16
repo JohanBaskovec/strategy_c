@@ -22,6 +22,7 @@ typedef struct Entity {
     bool isTemp;
     int nextFree;
     int id;
+    bool reachable;
 } Entity;
 
 Entity
@@ -31,6 +32,7 @@ entityCreate(
         , int spriteIndex
         , ObjectType type
         , bool gridAligned
+        , bool reachable
 );
 
 typedef struct EntityArray {

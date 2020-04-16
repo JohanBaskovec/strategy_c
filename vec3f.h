@@ -19,6 +19,9 @@ ARRAY_DECLARE(Vec3f, Vec3fArray);
 float
 vec3fLength(Vec3f vec);
 
+float
+vec3fDistance(Vec3f a, Vec3f b);
+
 bool
 vec3fIsZero(Vec3f v);
 float
