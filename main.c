@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     while (!world.end) {
         graphicsRender();
 
-        worldUpdate();
+        //worldUpdate();
         Uint32 ticks = SDL_GetTicks();
         Uint32 ticksSinceLastFrame = ticks - lastFrameTicks;
 

@@ -12,6 +12,7 @@ typedef struct Sprite {
     Box3f box;
     int entity;
     int keep;
+    int nextFree;
 } Sprite;
 
 Sprite

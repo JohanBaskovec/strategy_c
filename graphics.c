@@ -41,7 +41,7 @@ int
 graphicsAddSprite(enum Texture texture, Sprite sprite) {
     int i;
     fixedArrayAdd(&graphics.sprites[texture], sprite, SPRITE_MAX_NUMBER, i);
-    SDL_Log("Adding sprite: %d %f:%f:%f", texture, sprite.box.position.x, sprite.box.position.y, sprite.box.position.z);
+    //SDL_Log("Adding sprite: %d %f:%f:%f", texture, sprite.box.position.x, sprite.box.position.y, sprite.box.position.z);
     return i;
 }
 
@@ -78,11 +78,10 @@ graphicsInit() {
     graphics.screenWidth = 1200;
     graphics.screenHeight = 1000;
     // make sure that sprite array starts empty
-    /*
     for (int i = 0 ; i < TEXTURE_NUMBER ; i++) {
-        graphics.sprites[i];
+        SpriteFixedArray *a = &graphics.sprites[i];
+        fixedArrayInit(a, SPRITE_MAX_NUMBER);
     }
-    */
 
     textureConfigs[TEXTURE_HUMAN].name = "human.png";
     textureConfigs[TEXTURE_HUMAN].format = GL_RGBA;

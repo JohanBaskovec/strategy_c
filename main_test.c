@@ -2,6 +2,7 @@
 #include "vec3f_test.h"
 #include "box3f_test.h"
 #include "job_priority_queue_test.h"
+#include "fixed_array_test.h"
 
 TEST_PROGRAM_START
     RUN_TEST(arrayNewTest)
@@ -17,4 +18,6 @@ TEST_PROGRAM_START
 
     RUN_TEST(jobPriorityQueueCreateTest);
     RUN_TEST(jobPriorityQueuePopTest)
+
+    RUN_TEST(fixedArrayTest);
 TEST_PROGRAM_END

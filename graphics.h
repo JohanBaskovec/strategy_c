@@ -18,11 +18,12 @@ typedef struct TextureConfig {
 } TextureConfig;
 
 
-#define SPRITE_MAX_NUMBER 30000
+#define SPRITE_MAX_NUMBER 300000
 
 typedef struct SpriteFixedArray {
     int length;
     Sprite data[SPRITE_MAX_NUMBER];
+    int nextFree;
 } SpriteFixedArray;
 
 typedef struct Graphics {

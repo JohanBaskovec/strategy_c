@@ -113,33 +113,42 @@ fixedVoidArrayRemove(Array *a, int i, size_t sizeOfElement) {
     } name;
 
 typedef struct VoidFixedArray {
-    int maxIndex;
+    int length;
+    int nextFree;
     void *data[100];
 } VoidFixedArray;
 
-#define fixedArrayAdd(arr, elementToAdd, size, i) \
+// TODO: allow dynamic expanding of the array (but not shrinking)
+#define fixedArrayAdd(arr, elementToAdd, size, nextFreeIndex) \
     do {\
-        bool found = false;\
-        for (i = 0 ; i < size ; i++) {\
-            if (!(arr)->data[i].keep) {\
-                (arr)->data[i] = elementToAdd;\
-                (arr)->data[i].keep = true;\
-                if ((arr)->length < i+1) {\
-                    (arr)->length = i+1;\
-                }\
-                found = true;\
-                break;\
-            }\
-        }\
-        if (!found) {\
+        if ((arr)->nextFree == -1) {\
             printf("Error: array is full.\n");\
             exit(1);\
+        }\
+        nextFreeIndex = (arr)->nextFree;\
+        (arr)->nextFree = (arr)->data[nextFreeIndex].nextFree;\
+        (arr)->data[nextFreeIndex] = elementToAdd;\
+        if ((arr)->length < nextFreeIndex+1) {\
+            (arr)->length = nextFreeIndex+1;\
         }\
     } while (0);
 
 #define fixedArrayRemove(a, index) \
     {\
         printf("deleting\n");\
+        (a)->data[index].nextFree = (a)->nextFree;\
         (a)->data[index].keep = false;\
+        (a)->nextFree = index;\
     }
+
+#define fixedArrayInit(a, size) \
+    {\
+        (a)->length = 0;\
+        (a)->nextFree = 0;\
+        for (int k = 0 ; k < size - 1 ; k++) {\
+            (a)->data[k].nextFree = k+1;\
+        }\
+        (a)->data[size - 1].nextFree = -1;\
+    }
+
 #endif

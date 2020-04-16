@@ -20,6 +20,7 @@ typedef struct Entity {
     bool keep;
     bool gridAligned;
     bool isTemp;
+    int nextFree;
 } Entity;
 
 Entity

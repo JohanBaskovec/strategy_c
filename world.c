@@ -94,13 +94,14 @@ worldRemoveEntity(int index) {
 void
 worldInit() {
     world.end = false;
-    world.width = 10;
-    world.height = 10;
+    world.width = 50;
+    world.height = 50;
     world.widthTimesHeight = world.width * world.height;
-    world.depth = 10;
+    world.depth = 50;
     world.tilesN = world.width * world.height * world.depth;
     world.entityTiles = malloc(world.tilesN * sizeof(int));
     memset(world.entityTiles, -1, world.tilesN);
+    fixedArrayInit(&world.entities, ENTITY_MAX_NUMBER);
 
     objectConfigs[OBJECT_HUMAN].texture = TEXTURE_HUMAN;
     objectConfigs[OBJECT_HUMAN].isGridAligned = false;
@@ -158,12 +159,6 @@ worldGetDifficulty(int x, int y, int z) {
 
 void
 worldUpdate() {
-    for (int i = 0 ; i < world.entities.length ; i++) {
-        Entity *entity = &world.entities.data[i];
-        if (entity->keep) {
-            entityUpdate(entity);
-        }
-    }
     aiSystemUpdate();
 }
 
