@@ -26,25 +26,29 @@ int main(int argc, char *argv[]) {
     Uint32 secondTimer = 0;
     int fps = 0;
     int frameCount = 0;
+    int gameUpdateTimer = 1000;
+    int gameRenderTimer = 1000;
 
     while (!world.end) {
-        graphicsRender();
 
-        //worldUpdate();
         Uint32 ticks = SDL_GetTicks();
         Uint32 ticksSinceLastFrame = ticks - lastFrameTicks;
 
+        worldUpdate();
         inputPollEvents(ticks);
+        graphicsRender();
 
         secondTimer += ticksSinceLastFrame;
         if (secondTimer >= 1000) {
-            SDL_Log("%d frames rendering in %d milliseconds.", frameCount, secondTimer);
+            SDL_Log("%d frames rendering in %d milliseconds (%d ms since last frame).", frameCount, secondTimer, ticksSinceLastFrame);
             fps = (frameCount / (secondTimer * 1.0)) * 1000;
             SDL_Log("FPS: %d", fps);
             secondTimer = 0;
             frameCount = 0;
         }
         lastFrameTicks = ticks;
+        gameUpdateTimer += ticksSinceLastFrame;
+        gameRenderTimer += ticksSinceLastFrame;
         frameCount++;
     }
 

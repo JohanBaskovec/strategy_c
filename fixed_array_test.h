@@ -5,6 +5,7 @@ typedef struct TestNode {
     int nextFree;
     int keep;
     int value;
+    int id;
 } TestNode;
 typedef struct TestFixedArray {
     int length;

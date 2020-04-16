@@ -13,6 +13,7 @@
 #include "ai_system.h"
 #include "object_type.h"
 #include "object_config.h"
+#include "input.h"
 
 World world;
 
@@ -31,11 +32,12 @@ int
 worldCreateAndAddEntity(
         Vec3f position
         , ObjectType type
+        , bool visible
 ) {
     ObjectConfig config = objectConfigs[type];
     enum Texture texture = config.texture;
     Box3f b = box3fCreate(position, graphics.tileSize);
-    Sprite sprite = spriteCreate(b);
+    Sprite sprite = spriteCreate(b, visible);
     int spriteI = graphicsAddSprite(texture, sprite);
     Entity entity = entityCreate(b, texture, spriteI, type, config.isGridAligned);
     int entityI = worldAddEntity(entity);
@@ -55,13 +57,13 @@ worldCreateAndAddEntity(
 void
 addWall(int x, int y) {
     Vec3f p = {x, y, 0};
-    worldCreateAndAddEntity(p, OBJECT_WALL);
+    worldCreateAndAddEntity(p, OBJECT_WALL, true);
 }
 
 void
 addTree(int x, int y) {
     Vec3f p = {x, y, 0};
-    worldCreateAndAddEntity(p, OBJECT_TREE);
+    worldCreateAndAddEntity(p, OBJECT_TREE, true);
 }
 
 Entity*
@@ -117,7 +119,7 @@ worldInit() {
 
     {
         Vec3f p = {1, 1, 0};
-        int entityI = worldCreateAndAddEntity(p, OBJECT_HUMAN);
+        int entityI = worldCreateAndAddEntity(p, OBJECT_HUMAN, true);
         AiComponent ac = aiComponentCreate(entityI);
         int aci = aiSystemAddAiComponent(ac);
         Entity *e = worldGetEntity(entityI);
@@ -127,7 +129,7 @@ worldInit() {
         for (int x = 0 ; x < world.width ; x++) {
             for (int y = 0 ; y < world.height ; y++) {
                 Vec3f p = {x, y, -z};
-                worldCreateAndAddEntity(p, OBJECT_DIRT_BLOCK);
+                worldCreateAndAddEntity(p, OBJECT_DIRT_BLOCK, z == 1);
             }
         }
     }
@@ -159,6 +161,20 @@ worldGetDifficulty(int x, int y, int z) {
 
 void
 worldUpdate() {
+    float shortestDist = 10;
+    for (int i = 0 ; i < world.entities.length ; i++) {
+        Entity *e = &world.entities.data[i];
+        Sprite *s = graphicsGetEntitySprite(e);
+        if (s->keep && s->visible) {
+            Vec3f diff = vec3fSub(e->box.position, input.hoveredCoords);
+            float dist = vec3fRelativeLength(diff);
+            if (dist < shortestDist) {
+                shortestDist = dist;
+                input.closestEntity = e;
+            }
+        }
+        entityUpdate(e);
+    }
     aiSystemUpdate();
 }
 

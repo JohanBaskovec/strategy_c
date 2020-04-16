@@ -86,13 +86,13 @@ graphicsInit() {
     textureConfigs[TEXTURE_HUMAN].name = "human.png";
     textureConfigs[TEXTURE_HUMAN].format = GL_RGBA;
 
-    textureConfigs[TEXTURE_DIRT_BLOCK].name = "dirt_block_256.png";
-    textureConfigs[TEXTURE_DIRT_BLOCK].format = GL_RGB;
+    textureConfigs[TEXTURE_DIRT_BLOCK].name = "dirt_block_128.png";
+    textureConfigs[TEXTURE_DIRT_BLOCK].format = GL_RGBA;
 
-    textureConfigs[TEXTURE_WALL].name = "wall_256.png";
+    textureConfigs[TEXTURE_WALL].name = "wall_128.png";
     textureConfigs[TEXTURE_WALL].format = GL_RGBA;
 
-    textureConfigs[TEXTURE_TREE].name = "tree_256.png";
+    textureConfigs[TEXTURE_TREE].name = "tree_128.png";
     textureConfigs[TEXTURE_TREE].format = GL_RGB;
     Vec3f tileSize = {1.0, 1.0, 1.0};
     graphics.tileSize = tileSize;
@@ -255,6 +255,7 @@ graphicsInit() {
     SDL_Log("Loading done.");
 }
 
+
 bool firstRender = true;
 
 void
@@ -272,8 +273,20 @@ graphicsRender() {
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         SpriteFixedArray *a = &graphics.sprites[i];
         glBindBuffer(GL_ARRAY_BUFFER, instanceVbo[i]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Sprite) * a->length, a->data, GL_STATIC_DRAW);
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 36, a->length);
+        Sprite *visibleSprites = malloc(sizeof(Sprite) * a->length);
+        int nVisible = 0;
+        for (int i = 0 ; i < a->length ; i++) {
+            Sprite *s = &a->data[i];
+            int z = s->box.position.z;
+            if (s->keep && s->visible) {
+                visibleSprites[nVisible] = *s;
+                nVisible++;
+            }
+        }
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Sprite) * nVisible, visibleSprites, GL_STATIC_DRAW);
+        //glBufferData(GL_ARRAY_BUFFER, sizeof(Sprite) * a->length, a->data, GL_STATIC_DRAW);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 36, nVisible);
+        free(visibleSprites);
     }
 
     glBindVertexArray(0);

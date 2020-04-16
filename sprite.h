@@ -13,10 +13,12 @@ typedef struct Sprite {
     int entity;
     int keep;
     int nextFree;
+    bool visible;
+    int id;
 } Sprite;
 
 Sprite
-spriteCreate(Box3f box);
+spriteCreate(Box3f box, bool visible);
 typedef struct SpriteArray {
     int length;
     int allocated;

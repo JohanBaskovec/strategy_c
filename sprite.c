@@ -2,7 +2,7 @@
 #include "array.h"
 
 Sprite
-spriteCreate(Box3f box) {
+spriteCreate(Box3f box, bool visible) {
     Sprite s;
     s.box = box;
     s.colorMul = vec3fOne;
@@ -11,6 +11,8 @@ spriteCreate(Box3f box) {
     s.modelMatrix = mat4fVec3fTranslate(mat4fIdentity(), s.box.position);
     s.modelMatrix = mat4fScale(s.modelMatrix, s.box.size);
     s.keep = true;
+    s.visible = visible;
+    s.id = -1;
     return s;
 }
 

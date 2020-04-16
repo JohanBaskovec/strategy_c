@@ -9,6 +9,16 @@ vec3fLength(Vec3f vec) {
     return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
+float
+vec3fRelativeLength(Vec3f vec) {
+    return vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+}
+
+bool
+vec3fIsZero(Vec3f v) {
+    return v.x == 0 && v.z == 0 && v.y == 0;
+}
+
 Vec3f
 vec3fNormalize(Vec3f vec) {
     float length = vec3fLength(vec);

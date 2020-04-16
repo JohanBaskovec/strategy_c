@@ -19,6 +19,11 @@ ARRAY_DECLARE(Vec3f, Vec3fArray);
 float
 vec3fLength(Vec3f vec);
 
+bool
+vec3fIsZero(Vec3f v);
+float
+vec3fRelativeLength(Vec3f vec);
+
 Vec3f
 vec3fNormalize(Vec3f vec);
 

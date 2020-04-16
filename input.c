@@ -139,14 +139,48 @@ creationModeSetObject(ObjectType t) {
 }
 
 void
+revealSurroundingBlocks(Entity *e) {
+    Vec3f p = e->box.position;
+    Vec3f min;
+    min.x = fmax(0, p.x - 1.1);
+    min.y = fmax(0, p.y - 1.1);
+    min.z = fmin(0, p.z + 1.1);
+
+    Vec3f max;
+    max.x = fmin(world.width, p.x + 1.1);
+    max.y = fmin(world.height, p.y + 1.1);
+    max.z = fmax(-world.depth, p.z - 1.1);
+    for (int z = min.z ; z > max.z ; z--) {
+        for (int x = min.x ; x < max.x ; x++) {
+            for (int y = min.y ; y < max.y ; y++) {
+                Vec3f v = {x, y, z};
+                Entity *revealedEntity = worldGetTileAlignedEntity(v);
+                vec3fPrint(v);
+                printf("\n");
+                if (revealedEntity != NULL) {
+                    Sprite *s = graphicsGetEntitySprite(revealedEntity);
+                    s->visible = true;
+                }
+            }
+        }
+    }
+}
+
+void
 pressSelectButton() {
-    if (input.object == OBJECT_EMPTINESS) {
-        worldRemoveEntity(input.hoveredEntity);
-        input.hoveredEntity = -1;
-    } else if(input.object != OBJECT_NONE) {
-        Entity *tempEntity = worldGetEntity(input.tempObj);
-        tempEntity->isTemp = false;
-        input.tempObj = -1;
+    if (input.hoveredEntity != -1) {
+        if (input.object == OBJECT_EMPTINESS) {
+            Entity *e = worldGetEntity(input.hoveredEntity);
+            if (e->gridAligned) {
+                revealSurroundingBlocks(e);
+            }
+            worldRemoveEntity(input.hoveredEntity);
+            input.hoveredEntity = -1;
+        } else if(input.object != OBJECT_NONE) {
+            Entity *tempEntity = worldGetEntity(input.tempObj);
+            tempEntity->isTemp = false;
+            input.tempObj = -1;
+        }
     }
 }
 void
@@ -267,13 +301,13 @@ hoverEntity(Entity *e) {
         bool found = false;
         Vec3f p = s->box.position;
         Vec3f min;
-        min.x = fmin(0, p.x - 1.1);
-        min.y = fmin(0, p.y - 1.1);
+        min.x = fmax(0, p.x - 1.1);
+        min.y = fmax(0, p.y - 1.1);
         min.z = fmin(0, p.z + 1.1);
 
         Vec3f max;
-        max.x = fmax(world.width, p.x + 1.1);
-        max.y = fmax(world.height, p.y + 1.1);
+        max.x = fmin(world.width, p.x + 1.1);
+        max.y = fmin(world.height, p.y + 1.1);
         max.z = fmax(-world.depth, p.z - 1.1);
         for (int z = min.z ; z > max.z ; z--) {
             for (int x = min.x ; x < max.x ; x++) {
@@ -296,7 +330,7 @@ hoverEntity(Entity *e) {
             if (input.tempObj != -1) {
                 worldRemoveEntity(input.tempObj);
             }
-            input.tempObj = worldCreateAndAddEntity(closestPos , input.object);
+            input.tempObj = worldCreateAndAddEntity(closestPos , input.object, true);
             Entity *e = worldGetEntity(input.tempObj);
             e->isTemp = true;
         }
@@ -316,6 +350,7 @@ findHoveredObject() {
     Vec4f viewport = {0, 0, graphics.screenWidth, graphics.screenHeight};
     Vec3f wincoord = {input.mouseX, graphics.screenHeight - input.mouseY, depth};
     Vec3f objcoord = mat4fUnproject(wincoord, camera.viewMatrix, graphics.projectionMatrix, viewport);
+    input.hoveredCoords = objcoord;
 
     #ifdef LOG_HOVER
     printf("On pixel %d, %d, color %02hhx%02hhx%02hhx%02hhx, depth %f, stencil index %u\n",
@@ -325,22 +360,11 @@ findHoveredObject() {
     #endif
 
     float shortestDist = 1.0f;
-    Entity *closestEntity = NULL;
     int entityI = -1;
 
-    // TODO: move this to main loop to not loop over every entity multiple times
-    for (int i = 0 ; i < world.entities.length ; i++) {
-        Entity *e = &world.entities.data[i];
-        Vec3f diff = vec3fSub(e->box.position, objcoord);
-        float dist = vec3fLength(diff);
-        if (dist < shortestDist) {
-            shortestDist = dist;
-            closestEntity = e;
-            entityI = i;
-        }
-    }
+    if (input.closestEntity != NULL) {
 
-    if (closestEntity != NULL) {
+        int entityI = input.closestEntity->id;
         if (entityI != input.hoveredEntity) {
             Entity *e = worldGetEntity(entityI);
             if (!e->isTemp) {
@@ -349,7 +373,7 @@ findHoveredObject() {
             }
         }
 
-        closestEntity->hovered = true;
+        input.closestEntity->hovered = true;
         #ifdef LOG_HOVER
         SDL_Log("Hover %d", entityI);
         #endif
@@ -362,12 +386,12 @@ findHoveredObject() {
                 spriteSetColorAdd(s, vec3fZero);
             }
 
-            Box3f b = closestEntity->box;
+            Box3f b = input.closestEntity->box;
 
             input.selectedEntity = entityI;
-            closestEntity->selected = true;
+            input.closestEntity->selected = true;
 
-            Sprite *s = graphicsGetEntitySprite(closestEntity);
+            Sprite *s = graphicsGetEntitySprite(input.closestEntity);
             Vec3f colorAdd = {0.3, 0.1, 0.3};
             spriteSetColorAdd(s, colorAdd);
         }

@@ -21,6 +21,7 @@ typedef struct Entity {
     bool gridAligned;
     bool isTemp;
     int nextFree;
+    int id;
 } Entity;
 
 Entity

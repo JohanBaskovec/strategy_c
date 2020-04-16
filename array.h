@@ -127,6 +127,7 @@ typedef struct VoidFixedArray {
         }\
         nextFreeIndex = (arr)->nextFree;\
         (arr)->nextFree = (arr)->data[nextFreeIndex].nextFree;\
+        elementToAdd.id = nextFreeIndex;\
         (arr)->data[nextFreeIndex] = elementToAdd;\
         if ((arr)->length < nextFreeIndex+1) {\
             (arr)->length = nextFreeIndex+1;\

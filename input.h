@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include "object_type.h"
 #include "vec3f.h"
+#include "entity.h"
 
 typedef enum Key {
     KEY_NONE
@@ -58,6 +59,7 @@ typedef struct Input {
     ObjectType object;
     Vec3f hoveredCoords;
     int tempObj;
+    Entity *closestEntity;
 
 } Input;
 

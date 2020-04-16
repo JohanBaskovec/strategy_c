@@ -55,6 +55,7 @@ int
 worldCreateAndAddEntity(
         Vec3f position
         , ObjectType type
+        , bool visible
 );
 
 Entity*

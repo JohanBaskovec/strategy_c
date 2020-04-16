@@ -28,13 +28,16 @@ entityCreate(
     ret.gridAligned = gridAligned;
     ret.isTemp = false;
     ret.keep = true;
+    ret.id = -1;
     return ret;
 }
 
 void
 entityUpdate(Entity *e) {
-    e->box = box3fMoveVec3f(e->box, e->velocity);
+    if (!vec3fIsZero(e->velocity)) {
+        e->box = box3fMoveVec3f(e->box, e->velocity);
 
-    Sprite *s = graphicsGetSprite(e->texture, e->spriteIndex);
-    spriteMove(s, e->velocity);
+        Sprite *s = graphicsGetSprite(e->texture, e->spriteIndex);
+        spriteMove(s, e->velocity);
+    }
 }
